@@ -1,4 +1,5 @@
 import ast
+import datetime
 import json
 import os
 from textwrap import dedent
@@ -57,6 +58,16 @@ class LLMClient:
             log["response"] = text
             cost = completion_cost(completion_response=response) or 0
             log["cost"] = f"{float(cost):.10f}"
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            script_filename = self.log_path.parent / f"script_{timestamp}.py"
+
+            script_content = dedent(f"""\
+                    # Model: {log['model']}
+                    # Prompt: {log['prompt']}
+                    # Response Cost: {log.get('cost', 'N/A')}
+                    """)+text.split('```')[1]
+            with open(script_filename, "w") as script_file:
+                script_file.write(script_content)
             return text
         except Exception as e:
             log["error"] = str(e)
