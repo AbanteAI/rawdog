@@ -12,7 +12,7 @@ Please proceed with caution. This obviously has the potential to cause harm if s
 ### Quickstart
 1. Clone the repo: 
     ```
-    git clone http://github.com/granawkins/rawdog
+    git clone http://github.com/AbanteAI/rawdog
     cd rawdog
     ```
 2. Setup a virtual environment and install dependencies
