@@ -17,7 +17,7 @@ def rawdog(prompt: str):
 
 
 # Main Loop
-parser = argparse.ArgumentParser(description='A smart assistant for processing email data.')
+parser = argparse.ArgumentParser(description='A smart assistant that can execute Python code to help or hurt you.')
 parser.add_argument('prompt', nargs='*', help='Prompt for direct execution. If empty, enter conversation mode')
 args = parser.parse_args()
 llm_client = LLMClient()  # Will prompt for API key if not found
