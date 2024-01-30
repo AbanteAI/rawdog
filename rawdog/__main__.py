@@ -24,6 +24,14 @@ def rawdog(prompt: str):
     return output
 
 
+def banner():
+    print("""   / \__
+  (    @\___   ┳┓┏┓┓ ┏┳┓┏┓┏┓
+  /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
+ /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
+/_____/   U    Rawdog v0.1.0""")
+
+
 # Main Loop
 parser = argparse.ArgumentParser(description='A smart assistant that can execute Python code to help or hurt you.')
 parser.add_argument('prompt', nargs='*', help='Prompt for direct execution. If empty, enter conversation mode')
@@ -32,6 +40,7 @@ llm_client = LLMClient()  # Will prompt for API key if not found
 if len(args.prompt) > 0:
     rawdog(" ".join(args.prompt))
 else:
+    banner()
     while True:
         try:
             print("\nWhat can I do for you? (Ctrl-C to exit)")
