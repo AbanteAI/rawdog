@@ -23,15 +23,17 @@ Please follow these conventions carefully:
 - If you need clarification, return a SCRIPT that prints your question. In the next interaction, continue based on the user's response.
 - Assume the user would like something concise. For example rather than printing a massive table, filter or summarize it to what's likely of interest.
 - Actively clean up any temporary processes or files you use.
+- When looking through files, use git as available to skip files, and skip hidden files (.env, .git, etc) by default.
 - ALWAYS Return your SCRIPT inside of a single pair of ``` delimiters. Only the console output of the first such SCRIPT is visible to the user, so make sure that it's complete and don't bother returning anything else.
 
 Today's date is {date}.
-The current working directory is {cwd}.
+The current working directory is {cwd}, which {is_git} a git repository.
 The user's operating system is {os}
 """.format(
     date=datetime.date.today().isoformat(),
     cwd=Path.cwd(),
     os=platform.system(),
+    is_git="IS" if Path(".git").exists() else "is NOT",
 )
 
 script_examples = """\
