@@ -1,8 +1,6 @@
 import ast
-import io
 import json
 import os
-from contextlib import redirect_stdout
 from textwrap import dedent
 
 from litellm import completion, completion_cost
@@ -89,13 +87,6 @@ class LLMClient:
             # Make sure it's valid python
             try:
                 ast.parse(script)
-                with io.StringIO() as buf, redirect_stdout(buf):
-                    exec(script, globals())
-                    output = buf.getvalue()
-                    if output:
-                        self.conversation.append(
-                            {"role": "system", "content": f"LAST SCRIPT OUTPUT: {output}"}
-                        )
             except SyntaxError as e:
                 error == f"Invalid script:\n{script}"
                 script = None

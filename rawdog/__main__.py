@@ -1,19 +1,27 @@
 import argparse
+import io
+
+from contextlib import redirect_stdout
 
 from rawdog.llm_client import LLMClient
 
 
 def rawdog(prompt: str):
+    output = None
     error, script = llm_client.get_script(prompt)
     if script:
         try:
-            exec(script, globals())
+            with io.StringIO() as buf, redirect_stdout(buf):
+                exec(script, globals())
+                output = buf.getvalue()
+            print(output)
         except Exception as e:
             error = f"Executing the script raised an Exception: {e}"
     if error:
         print(f"Error: {error}")
         if script:
             print(f"{80 * '-'}{script}{80 * '-'}")
+    return output
 
 
 # Main Loop
@@ -29,7 +37,8 @@ else:
             print("\nWhat can I do for you? (Ctrl-C to exit)")
             prompt = input("> ")
             print("")
-            rawdog(prompt)
+            output = rawdog(prompt)
+            llm_client.conversation.append({"role": "system", "content": f"LAST SCRIPT OUTPUT:\n{output}"})
         except KeyboardInterrupt:
             print("Exiting...")
             break
