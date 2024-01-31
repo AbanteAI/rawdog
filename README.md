@@ -15,26 +15,28 @@ Please proceed with caution. This obviously has the potential to cause harm if s
     git clone http://github.com/AbanteAI/rawdog
     cd rawdog
     ```
-2. Setup a virtual environment and install dependencies
+2. Install it locally with pip
     ```
-    virtualenv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    pip install -e .
     ```
 
 3. Choose a mode of interaction. You will be prompted to input your API key if not found:
 
     Direct: Execute a single prompt and close
     ```
-    python3 -m rawdog Plot the size of all the files and directories in cwd
+    rawdog Plot the size of all the files and directories in cwd
     ```
     
     Conversation: Initiate back-and-forth until you close. Rawdog can see its scripts and output.
     ```
-    python3 -m rawdog
+    rawdog
     >>> What can I do for you? (Ctrl-C to exit)
     >>> > |
     ```
+
+## Optional Arguments
+* `--dry-run`: Print and manually approve each script before executing.
+* `--continuation`: Let the model run scripts to generate context for itself before completing the task.
 
 ## Model selection
 Rawdog uses `litellm` for completions with 'gpt-4' as the default. You can adjust the model or

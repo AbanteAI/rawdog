@@ -49,26 +49,28 @@ parser.add_argument('--dry-run', action='store_true', help='Print the script bef
 parser.add_argument('--continuation', action='store_true', help='Allow Rawdog to execute consecutive scripts.')
 args = parser.parse_args()
 llm_client = LLMClient(continuation=args.continuation)  # Will prompt for API key if not found
-if len(args.prompt) > 0:
-    rawdog(" ".join(args.prompt))
-else:
-    banner()
-    while True:
-        try:
-            print("\nWhat can I do for you? (Ctrl-C to exit)")
-            prompt = input("> ")
-            print("")
-            continuation = True
-            while continuation is True:
-                try:
-                    output = rawdog(prompt, silence=True)
-                    continuation = args.continuation and output.strip().endswith("CONTINUE")
-                    if args.dry_run or continuation is False:
-                        print(output)
-                    llm_client.conversation.append({"role": "system", "content": f"LAST SCRIPT OUTPUT:\n{output}"})
-                except KeyboardInterrupt:
-                    print("Exiting...")
-                    break
-        except KeyboardInterrupt:
-            print("Exiting...")
-            break
+
+def main():
+    if len(args.prompt) > 0:
+        rawdog(" ".join(args.prompt))
+    else:
+        banner()
+        while True:
+            try:
+                print("\nWhat can I do for you? (Ctrl-C to exit)")
+                prompt = input("> ")
+                print("")
+                continuation = True
+                while continuation is True:
+                    try:
+                        output = rawdog(prompt, silence=True)
+                        continuation = args.continuation and output and output.strip().endswith("CONTINUE")
+                        if args.dry_run or continuation is False:
+                            print(output)
+                        llm_client.conversation.append({"role": "system", "content": f"LAST SCRIPT OUTPUT:\n{output}"})
+                    except KeyboardInterrupt:
+                        print("Exiting...")
+                        break
+            except KeyboardInterrupt:
+                print("Exiting...")
+                break
