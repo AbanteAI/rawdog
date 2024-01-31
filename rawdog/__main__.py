@@ -48,7 +48,7 @@ parser.add_argument('prompt', nargs='*', help='Prompt for direct execution. If e
 parser.add_argument('--dry-run', action='store_true', help='Print the script before executing and prompt for confirmation.')
 parser.add_argument('--continuation', action='store_true', help='Allow Rawdog to execute consecutive scripts.')
 args = parser.parse_args()
-llm_client = LLMClient()  # Will prompt for API key if not found
+llm_client = LLMClient(continuation=args.continuation)  # Will prompt for API key if not found
 if len(args.prompt) > 0:
     rawdog(" ".join(args.prompt))
 else:

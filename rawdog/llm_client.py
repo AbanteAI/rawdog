@@ -15,12 +15,17 @@ from rawdog.utils import (
     set_llm_api_key,
     set_llm_model
 )
-from rawdog.prompts import script_prompt, script_examples
+from rawdog.prompts import (
+    continuation_prompt, 
+    continuation_examples, 
+    script_prompt, 
+    script_examples
+)
 
 
 class LLMClient:
 
-    def __init__(self):    
+    def __init__(self, continuation: bool = False):    
         self.log_path = rawdog_dir / "logs.jsonl"    
         self.base_url = get_llm_base_url() or 'https://api.openai.com/v1'
         set_base_url(self.base_url)
@@ -31,9 +36,11 @@ class LLMClient:
             print(f"API Key ({self.api_key}) not found. ")
             self.api_key = input("Enter API Key (e.g. OpenAI): ").strip()
             set_llm_api_key(self.api_key)
+        _prompt = continuation_prompt if continuation else script_prompt
+        _examples = continuation_examples if continuation else script_examples
         self.conversation = [
-            {"role": "system", "content": script_prompt},
-            {"role": "system", "content": script_examples},
+            {"role": "system", "content": _prompt},
+            {"role": "system", "content": _examples},
         ]
 
     def get_response(
