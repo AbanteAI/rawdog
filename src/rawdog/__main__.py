@@ -36,7 +36,7 @@ def rawdog(prompt: str, silence: bool = False):
 
 def banner():
     print("""   / \__
-  (    @\___   ┳┓┏┓┓ ┏┳┓┏┓┏┓
+  (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
   /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
  /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
 /_____/   U    Rawdog v0.1.0""")
