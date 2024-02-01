@@ -60,7 +60,7 @@ def main():
                 _continue = True
                 while _continue is True:
                     try:
-                        output = rawdog(prompt, silence=True)
+                        output = rawdog(prompt)
                         _continue = output and output.strip().endswith("CONTINUE")
                         if args.dry_run or _continue is False:
                             print(output)
