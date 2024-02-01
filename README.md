@@ -36,7 +36,6 @@ Please proceed with caution. This obviously has the potential to cause harm if s
 
 ## Optional Arguments
 * `--dry-run`: Print and manually approve each script before executing.
-* `--continuation`: Let the model run scripts to generate context for itself before completing the task.
 
 ## Model selection
 Rawdog uses `litellm` for completions with 'gpt-4' as the default. You can adjust the model or
