@@ -12,9 +12,9 @@ llm_client = LLMClient()  # Will prompt for API key if not found
 def rawdog(prompt: str, verbose: bool=False):
     _continue = True
     while _continue is True:
-        error, output = "", ""
+        error, script, output = "", "", ""
         try:
-            error, script = llm_client.get_script(prompt)
+            message, script = llm_client.get_script(prompt)
             if script:
                 if verbose:
                     if input("Proceed with execution? (Y/n):").strip().lower() == "n":
@@ -23,6 +23,8 @@ def rawdog(prompt: str, verbose: bool=False):
                 with io.StringIO() as buf, redirect_stdout(buf):
                     exec(script, globals())
                     output = buf.getvalue()
+            elif message:
+                print(message)
         except (Exception, KeyboardInterrupt) as e:
             error = str(e)
 
