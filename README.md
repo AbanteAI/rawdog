@@ -17,17 +17,12 @@ Rawdog can self-select context by running scripts to print things, adding the ou
 Please proceed with caution. This obviously has the potential to cause harm if so instructed.
 
 ### Quickstart
-1. Clone the repo: 
+1. Install rawdog with pip:
     ```
-    git clone http://github.com/AbanteAI/rawdog
-    cd rawdog
-    ```
-2. Install it locally with pip
-    ```
-    pip install -e .
+    pip install rawdog-ai
     ```
 
-3. Choose a mode of interaction. You will be prompted to input an API key if not found:
+2. Choose a mode of interaction. You will be prompted to input an API key if not found:
 
     Direct: Execute a single prompt and close
     ```
