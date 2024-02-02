@@ -2,6 +2,8 @@
 
 An CLI assistant that responds by generating and auto-executing a Python script. 
 
+https://github.com/AbanteAI/rawdog/assets/50287275/1417a927-58c1-424f-90a8-e8e63875dcda
+
 You'll be surprised how useful this can be:
 - "How many folders in my home directory are git repos?" ... "Plot them by disk size."
 - "Give me the pd.describe() for all the csv's in this directory"
