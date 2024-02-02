@@ -17,28 +17,38 @@ def rawdog(prompt: str, verbose: bool=False):
             message, script = llm_client.get_script(prompt)
             if script:
                 if verbose:
+                    _message = f"{message}\n" if message else ""
+                    print(f"{80 * '-'}\n{_message}{script}\n{80 * '-'}")
                     if input("Proceed with execution? (Y/n):").strip().lower() == "n":
-                        print("Execution cancelled by user.")
-                        return
+                        raise Exception("Execution cancelled by user")
                 with io.StringIO() as buf, redirect_stdout(buf):
                     exec(script, globals())
                     output = buf.getvalue()
             elif message:
                 print(message)
-        except (Exception, KeyboardInterrupt) as e:
-            error = str(e)
+        except KeyboardInterrupt:
+            error = "Execution interrupted by user"
+        except Exception as e:
+            error = f"Execution error: {e}"
 
         _continue = output and output.strip().endswith("CONTINUE")
         if error:
+            llm_client.conversation.append(
+                {"role": "system", "content": f"Error: {error}"}
+            )
             print(f"Error: {error}")
             if script and not verbose:
                 print(f"{80 * '-'}{script}{80 * '-'}")
         if output:
             llm_client.conversation.append(
-                {"role": "user", "content": f"LAST SCRIPT OUTPUT:\n{output}"}
+                {"role": "assistant", "content": f"LAST SCRIPT OUTPUT:\n{output}"}
             )
             if verbose or not _continue:
                 print(output)
+        if _continue:
+            llm_client.conversation.append(
+                {"role": "user", "content": prompt}
+            )
 
 
 def banner():

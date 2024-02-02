@@ -1,11 +1,16 @@
 # Rawdog
 
-A command-line utility that just generates and auto-executes Python scripts.
+An CLI assistant that responds by generating and auto-executing a Python script. 
 
-You'll be surprised how useful it can be:
+You'll be surprised how useful this can be:
 - "How many folders in my home directory are git repos?" ... "Plot them by disk size."
 - "Give me the pd.describe() for all the csv's in this directory"
 - "What ports are currently active?" ... "What are the Google ones?" ... "Cancel those please."
+
+Rawdog can self-select context by running scripts to print things, adding the output to the conversation, and then calling itself again. This works for tasks like:
+- "Setup the repo per the instructions in the README"
+- "Look at all these csv's and tell me if they can be merged or not, and why."
+- "Try that again."
 
 Please proceed with caution. This obviously has the potential to cause harm if so instructed.
 
@@ -20,7 +25,7 @@ Please proceed with caution. This obviously has the potential to cause harm if s
     pip install -e .
     ```
 
-3. Choose a mode of interaction. You will be prompted to input your API key if not found:
+3. Choose a mode of interaction. You will be prompted to input an API key if not found:
 
     Direct: Execute a single prompt and close
     ```
