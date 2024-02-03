@@ -9,7 +9,9 @@ You'll be surprised how useful this can be:
 - "Give me the pd.describe() for all the csv's in this directory"
 - "What ports are currently active?" ... "What are the Google ones?" ... "Cancel those please."
 
-Rawdog can self-select context by running scripts to print things, adding the output to the conversation, and then calling itself again. This works for tasks like:
+Rawdog (Recursive Augmentation With Deterministic Output Generations) is a novel alternative to RAG (Retreival Augmented Generation). Rawdog can self-select context by running scripts to print things, adding the output to the conversation, and then calling itself again. 
+
+This works for tasks like:
 - "Setup the repo per the instructions in the README"
 - "Look at all these csv's and tell me if they can be merged or not, and why."
 - "Try that again."
