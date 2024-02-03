@@ -8,8 +8,8 @@ version = "0.1.0"
 description = "An AI command-line assistant"
 readme = "README.md"
 dependencies = [
-    "litellm>=1.20.5"
     "matplotlib>=3.8.2",
+    "litellm>=1.20.5"
 ]
 requires-python = ">=3.8"
 classifiers = [
