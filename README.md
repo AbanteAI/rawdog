@@ -19,7 +19,7 @@ Please proceed with caution. This obviously has the potential to cause harm if s
 ### Quickstart
 1. Install rawdog with pip:
     ```
-    pip install rawdog-ai
+    pip install rawdog-ai litellm
     ```
 
 2. Choose a mode of interaction. You will be prompted to input an API key if not found:
