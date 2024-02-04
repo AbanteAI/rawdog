@@ -71,6 +71,7 @@ class LLMClient:
     def get_response(
         self, 
         messages: list[dict[str, str]],
+        temperature: float=1.0,
     ) -> str:
         log = {
             "model": self.model,
@@ -84,7 +85,7 @@ class LLMClient:
                 api_key=self.api_key,
                 model=self.model,
                 messages=messages,
-                temperature=1.0,
+                temperature=temperature,
                 custom_llm_provider=self.custom_provider,
             )
             text = (response.choices[0].message.content) or ""
@@ -113,8 +114,8 @@ class LLMClient:
             with open(self.log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
         
-    def get_script(self, prompt: str):
+    def get_script(self, prompt: str, temperature: float=1.0):
         self.conversation.append({"role": "user", "content": f"PROMPT: {prompt}"})
-        response = self.get_response(self.conversation)
+        response = self.get_response(self.conversation, temperature)
         self.conversation.append({"role": "system", "content": response})
         return parse_script(response)
