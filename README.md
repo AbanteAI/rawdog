@@ -2,7 +2,7 @@
 
 # Rawdog
 
-An CLI assistant that responds by generating and auto-executing a Python script. 
+An CLI assistant that responds by generating an auto-executing a Python script. 
 
 https://github.com/AbanteAI/rawdog/assets/50287275/1417a927-58c1-424f-90a8-e8e63875dcda
 
