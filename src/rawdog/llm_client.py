@@ -84,7 +84,7 @@ class LLMClient:
                 api_key=self.api_key,
                 model=self.model,
                 messages=messages,
-                temperature=1.0,
+                temperature=0.0,
                 custom_llm_provider=self.custom_provider,
             )
             text = (response.choices[0].message.content) or ""
