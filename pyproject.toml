@@ -12,7 +12,7 @@ description = "An AI command-line assistant"
 readme = "README.md"
 dependencies = [
     "matplotlib>=3.8.2",
-    "litellm>=1.20.5"
+    "litellm>=1.22.3"
 ]
 requires-python = ">=3.8"
 classifiers = [
