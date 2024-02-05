@@ -6,6 +6,8 @@ from pathlib import Path
 rawdog_dir = Path.home() / ".rawdog"
 rawdog_dir.mkdir(exist_ok=True)
 
+# Command history file
+history_file = rawdog_dir / "cmdline_history"
 
 # Config
 config_path = rawdog_dir / "config.yaml"

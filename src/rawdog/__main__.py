@@ -1,9 +1,11 @@
 import argparse
 import io
+import readline
 
 from contextlib import redirect_stdout
 
 from rawdog.llm_client import LLMClient
+from rawdog.utils import history_file
 
 
 llm_client = LLMClient()  # Will prompt for API key if not found
@@ -65,6 +67,10 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='Print the script before executing and prompt for confirmation.')
     args = parser.parse_args()
 
+    if history_file.exists():
+        readline.read_history_file(history_file)
+    readline.set_history_length(1000)
+    
     if len(args.prompt) > 0:
         rawdog(" ".join(args.prompt))
     else:
@@ -73,6 +79,8 @@ def main():
             try:
                 print("\nWhat can I do for you? (Ctrl-C to exit)")
                 prompt = input("> ")
+                # Save history after each command to avoid losing it in case of crash
+                readline.write_history_file(history_file)
                 print("")
                 rawdog(prompt, verbose=args.dry_run)
             except KeyboardInterrupt:
