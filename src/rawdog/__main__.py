@@ -70,8 +70,8 @@ def main():
         banner()
         while True:
             try:
-                print("What can I do for you? (Ctrl-C to exit)")
-                prompt = input(f"\n{host}@{os.getcwd()} > ")
+                print("\nWhat can I do for you? (Ctrl-C to exit)")
+                prompt = input(f"{host}@{os.getcwd()} > ")
                 print("")
                 rawdog(prompt, verbose=args.dry_run)
             except KeyboardInterrupt:
