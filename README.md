@@ -1,3 +1,5 @@
+[![Discord Follow](https://dcbadge.vercel.app/api/server/XbPdxAMJte?style=flat)](https://discord.gg/zbvd9qx9Pb)
+
 # Rawdog
 
 An CLI assistant that responds by generating and auto-executing a Python script. 
