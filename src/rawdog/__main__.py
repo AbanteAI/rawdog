@@ -1,10 +1,9 @@
 import argparse
 import io
-
+import os
 from contextlib import redirect_stdout
 
 from rawdog.llm_client import LLMClient
-
 
 llm_client = LLMClient()  # Will prompt for API key if not found
 
@@ -64,15 +63,15 @@ def main():
     parser.add_argument('prompt', nargs='*', help='Prompt for direct execution. If empty, enter conversation mode')
     parser.add_argument('--dry-run', action='store_true', help='Print the script before executing and prompt for confirmation.')
     args = parser.parse_args()
-
+    host = os.uname()[1]
     if len(args.prompt) > 0:
         rawdog(" ".join(args.prompt))
     else:
         banner()
         while True:
             try:
-                print("\nWhat can I do for you? (Ctrl-C to exit)")
-                prompt = input("> ")
+                print("What can I do for you? (Ctrl-C to exit)")
+                prompt = input(f"\n{host}@{os.getcwd()} > ")
                 print("")
                 rawdog(prompt, verbose=args.dry_run)
             except KeyboardInterrupt:
