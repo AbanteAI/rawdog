@@ -9,12 +9,12 @@ from rawdog.llm_client import LLMClient
 llm_client = LLMClient()  # Will prompt for API key if not found
 
 
-def rawdog(prompt: str, verbose: bool=False, temperature: float=1.0):
+def rawdog(prompt: str, verbose: bool=False):
     _continue = True
     while _continue is True:
         error, script, output = "", "", ""
         try:
-            message, script = llm_client.get_script(prompt, temperature)
+            message, script = llm_client.get_script(prompt)
             if script:
                 if verbose:
                     _message = f"{message}\n" if message else ""
@@ -63,7 +63,6 @@ def main():
     parser = argparse.ArgumentParser(description='A smart assistant that can execute Python code to help or hurt you.')
     parser.add_argument('prompt', nargs='*', help='Prompt for direct execution. If empty, enter conversation mode')
     parser.add_argument('--dry-run', action='store_true', help='Print the script before executing and prompt for confirmation.')
-    parser.add_argument('--temperature', type=float, default=1.0, help='The temperature of the language model (default: 1.)')
     args = parser.parse_args()
 
     if len(args.prompt) > 0:
@@ -75,7 +74,7 @@ def main():
                 print("\nWhat can I do for you? (Ctrl-C to exit)")
                 prompt = input("> ")
                 print("")
-                rawdog(prompt, verbose=args.dry_run, temperature=args.temperature)
+                rawdog(prompt, verbose=args.dry_run)
             except KeyboardInterrupt:
                 print("Exiting...")
                 break

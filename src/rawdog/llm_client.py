@@ -13,10 +13,12 @@ from rawdog.utils import (
     get_llm_api_key, 
     get_llm_model,
     get_llm_custom_provider,
+    get_llm_temperature,
     set_base_url,
     set_llm_api_key,
     set_llm_model,
-    set_llm_custom_provider
+    set_llm_custom_provider,
+    set_llm_temperature,
 )
 from rawdog.prompts import script_prompt, script_examples
 
@@ -63,6 +65,9 @@ class LLMClient:
             set_llm_api_key(self.api_key)
         self.custom_provider = get_llm_custom_provider() or None
         set_llm_custom_provider(self.custom_provider)
+        cfg_temperature = get_llm_temperature()
+        self.temperature = cfg_temperature if cfg_temperature is not None else 1.0
+        set_llm_temperature(self.temperature)
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
@@ -71,7 +76,6 @@ class LLMClient:
     def get_response(
         self, 
         messages: list[dict[str, str]],
-        temperature: float=1.0,
     ) -> str:
         log = {
             "model": self.model,
@@ -85,7 +89,7 @@ class LLMClient:
                 api_key=self.api_key,
                 model=self.model,
                 messages=messages,
-                temperature=temperature,
+                temperature=self.temperature,
                 custom_llm_provider=self.custom_provider,
             )
             text = (response.choices[0].message.content) or ""
@@ -114,8 +118,8 @@ class LLMClient:
             with open(self.log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
         
-    def get_script(self, prompt: str, temperature: float=1.0):
+    def get_script(self, prompt: str):
         self.conversation.append({"role": "user", "content": f"PROMPT: {prompt}"})
-        response = self.get_response(self.conversation, temperature)
+        response = self.get_response(self.conversation)
         self.conversation.append({"role": "system", "content": response})
         return parse_script(response)

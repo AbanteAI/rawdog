@@ -39,9 +39,16 @@ def get_llm_api_key():
     config = load_config()
     return config.get('llm_api_key')
 
+
 def get_llm_custom_provider():
     config = load_config()
     return config.get('llm_custom_provider')
+
+
+def get_llm_temperature():
+    config = load_config()
+    return config.get('llm_temperature')
+
 
 def set_llm_model(model_name: str):
     config = load_config()
@@ -60,7 +67,14 @@ def set_base_url(base_url: str):
     config['llm_base_url'] = base_url
     save_config(config)
 
+
 def set_llm_custom_provider(custom_provider: str):
     config = load_config()
     config['llm_custom_provider'] = custom_provider
+    save_config(config)
+
+
+def set_llm_temperature(temperature: float):
+    config = load_config()
+    config['llm_temperature'] = temperature
     save_config(config)
