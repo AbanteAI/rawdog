@@ -1,12 +1,12 @@
 import argparse
 import io
+import os
 import readline
 
 from contextlib import redirect_stdout
 
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
-
 
 llm_client = LLMClient()  # Will prompt for API key if not found
 
@@ -71,6 +71,7 @@ def main():
         readline.read_history_file(history_file)
     readline.set_history_length(1000)
     
+    host = os.uname()[1]
     if len(args.prompt) > 0:
         rawdog(" ".join(args.prompt))
     else:
@@ -78,7 +79,7 @@ def main():
         while True:
             try:
                 print("\nWhat can I do for you? (Ctrl-C to exit)")
-                prompt = input("> ")
+                prompt = input(f"{host}@{os.getcwd()} > ")
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
