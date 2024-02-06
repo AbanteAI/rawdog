@@ -81,7 +81,7 @@ you can set the `llm_base_url`. For instance if you have an openai compatible en
 http://localhost:8000 you can set your config to:
 ```
 llm_base_url: http://localhost:8000
-model: openai/model # So litellm knows it's an openai compatible endpoint
+llm_model: openai/model # So litellm knows it's an openai compatible endpoint
 ```
 
 Litellm supports a huge number of providers including Azure, VertexAi and Huggingface. See
