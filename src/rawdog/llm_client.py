@@ -10,11 +10,9 @@ from litellm import completion, completion_cost
 from rawdog.utils import (
     rawdog_dir, 
     get_llm_base_url, 
-    get_llm_api_key, 
     get_llm_model,
     get_llm_custom_provider,
     set_base_url,
-    set_llm_api_key,
     set_llm_model,
     set_llm_custom_provider
 )
@@ -52,17 +50,20 @@ class LLMClient:
 
     def __init__(self):    
         self.log_path = rawdog_dir / "logs.jsonl"    
-        self.base_url = get_llm_base_url() or 'https://api.openai.com/v1'
+        self.base_url = get_llm_base_url()
         set_base_url(self.base_url)
         self.model = get_llm_model() or 'gpt-4'
         set_llm_model(self.model)
-        self.api_key = get_llm_api_key() or os.environ.get("OPENAI_API_KEY")
-        while self.api_key is None:
-            print(f"API Key ({self.api_key}) not found. ")
-            self.api_key = input("Enter API Key (e.g. OpenAI): ").strip()
-            set_llm_api_key(self.api_key)
         self.custom_provider = get_llm_custom_provider() or None
         set_llm_custom_provider(self.custom_provider)
+
+        # In general it's hard to know if the user needs an API key or which environment variables to set
+        # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
+        if self.model == "gpt-4" and not self.custom_provider and not self.base_url:
+            env_api_key = os.getenv("OPENAI_API_KEY")
+            if not env_api_key:
+                print("Please set the OPENAI_API_KEY environment variable.")
+                quit()
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
@@ -81,7 +82,6 @@ class LLMClient:
         try:
             response = completion(
                 base_url=self.base_url,
-                api_key=self.api_key,
                 model=self.model,
                 messages=messages,
                 temperature=1.0,
