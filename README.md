@@ -71,7 +71,7 @@ To run claude-2.1 set your API key:
 ```bash
 export ANTHROPIC_API_KEY=your-api-key
 ```
-and then set you config:
+and then set your config:
 ```yaml
 llm_model: claude-2.1
 ```
