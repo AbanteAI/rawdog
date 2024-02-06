@@ -8,7 +8,7 @@ from contextlib import redirect_stdout
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
 
-llm_client = LLMClient()  # Will prompt for API key if not found
+llm_client = LLMClient()  # Will fail with descriptive error message if not found
 
 
 def rawdog(prompt: str, verbose: bool=False):

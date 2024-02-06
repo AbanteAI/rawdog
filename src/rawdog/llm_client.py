@@ -56,6 +56,14 @@ class LLMClient:
         set_llm_model(self.model)
         self.custom_provider = get_llm_custom_provider() or None
         set_llm_custom_provider(self.custom_provider)
+
+        # In general it's hard to know if the user needs an API key or which environment variables to set
+        # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
+        if self.model == "gpt-4" and not self.custom_provider and not self.base_url:
+            env_api_key = os.getenv("OPENAI_API_KEY")
+            if not env_api_key:
+                print("Please set the OPENAI_API_KEY environment variable.")
+                quit()
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
