@@ -8,20 +8,20 @@ from textwrap import dedent
 from litellm import completion, completion_cost
 
 from rawdog.utils import (
-    rawdog_dir, 
-    get_llm_base_url, 
+    rawdog_dir,
+    get_llm_base_url,
     get_llm_model,
     get_llm_custom_provider,
     set_base_url,
     set_llm_model,
-    set_llm_custom_provider
+    set_llm_custom_provider,
 )
 from rawdog.prompts import script_prompt, script_examples
 
 
 def parse_script(response: str) -> tuple[str, str]:
     """Split the response into a message and a script.
-    
+
     Expected use is: run the script if there is one, otherwise print the message.
     """
     # Parse delimiter
@@ -29,7 +29,7 @@ def parse_script(response: str) -> tuple[str, str]:
     if n_delimiters < 2:
         return f"Error: No script found in response:\n{response}", ""
     segments = response.split("```")
-    message = f'{segments[0]}\n{segments[-1]}'
+    message = f"{segments[0]}\n{segments[-1]}"
     script = "```".join(segments[1:-1]).strip()  # Leave 'inner' delimiters alone
 
     # Check for common mistakes
@@ -48,11 +48,11 @@ def parse_script(response: str) -> tuple[str, str]:
 
 class LLMClient:
 
-    def __init__(self):    
-        self.log_path = rawdog_dir / "logs.jsonl"    
+    def __init__(self):
+        self.log_path = rawdog_dir / "logs.jsonl"
         self.base_url = get_llm_base_url()
         set_base_url(self.base_url)
-        self.model = get_llm_model() or 'gpt-4'
+        self.model = get_llm_model() or "gpt-4"
         set_llm_model(self.model)
         self.custom_provider = get_llm_custom_provider() or None
         set_llm_custom_provider(self.custom_provider)
@@ -70,7 +70,7 @@ class LLMClient:
         ]
 
     def get_response(
-        self, 
+        self,
         messages: list[dict[str, str]],
     ) -> str:
         log = {
@@ -97,11 +97,19 @@ class LLMClient:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             script_filename = self.log_path.parent / f"script_{timestamp}.py"
             _, script = ("", "") if not text else parse_script(text)
-            script_content = dedent(f"""\
-                # Model: {log['model']}
-                # Prompt: {log['prompt']}
-                # Response Cost: {log.get('cost', 'N/A')}
-                """) + script if script else f"INVALID SCRIPT:\n{text}"
+            metadata = {
+                "model": self.model,
+                "cost": log.get("cost", "N/A"),
+                "timestamp": timestamp,
+            }
+            script_content = (
+                "# PROMPT INFORMATION\n"
+                f"conversation = {json.dumps(messages[2:], indent=4)}\n"
+                f"metadata = {json.dumps(metadata, indent=4)}\n"
+                "# START SCRIPT\n" + script
+                if script
+                else f"#INVALID SCRIPT:\n{text}"
+            )
             with open(script_filename, "w") as script_file:
                 script_file.write(script_content)
             return text
@@ -112,7 +120,7 @@ class LLMClient:
         finally:
             with open(self.log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
-        
+
     def get_script(self, prompt: str):
         self.conversation.append({"role": "user", "content": f"PROMPT: {prompt}"})
         response = self.get_response(self.conversation)
