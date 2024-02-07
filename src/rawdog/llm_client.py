@@ -96,9 +96,9 @@ class LLMClient:
                 cost = completion_cost(completion_response=response) or 0
             log["cost"] = f"{float(cost):.10f}"
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            script_filename = self.log_path.parent / f"script_{timestamp}.py"
             _, script = ("", "") if not text else parse_script(text)
             if script:
+                script_filename = self.log_path.parent / f"script_{timestamp}.py"
                 metadata = {
                     "model": self.model,
                     "cost": log.get("cost", "N/A"),
@@ -117,6 +117,9 @@ class LLMClient:
                             """
                 )
                 with open(script_filename, "w") as script_file:
+                    script_file.write(script_content)
+                latest_script_filename = self.log_path.parent / "latest.py"
+                with open(latest_script_filename, "w") as script_file:
                     script_file.write(script_content)
             return text
         except Exception as e:
