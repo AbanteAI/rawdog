@@ -3,7 +3,8 @@ import datetime
 import json
 import os
 import re
-from textwrap import dedent
+from textwrap import dedent, indent
+from typing import Optional
 
 from litellm import completion, completion_cost
 
@@ -97,21 +98,26 @@ class LLMClient:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             script_filename = self.log_path.parent / f"script_{timestamp}.py"
             _, script = ("", "") if not text else parse_script(text)
-            metadata = {
-                "model": self.model,
-                "cost": log.get("cost", "N/A"),
-                "timestamp": timestamp,
-            }
-            script_content = (
-                "# PROMPT INFORMATION\n"
-                f"conversation = {json.dumps(messages[2:], indent=4)}\n"
-                f"metadata = {json.dumps(metadata, indent=4)}\n"
-                "# START SCRIPT\n" + script
-                if script
-                else f"#INVALID SCRIPT:\n{text}"
-            )
-            with open(script_filename, "w") as script_file:
-                script_file.write(script_content)
+            if script:
+                metadata = {
+                    "model": self.model,
+                    "cost": log.get("cost", "N/A"),
+                    "timestamp": timestamp,
+                    "log_version": 0.1,
+                }
+                script_content = (
+                    f"conversation = {json.dumps(messages[2:], indent=4)}\n\n"
+                    f"metadata = {json.dumps(metadata, indent=4)}\n\n\n"
+                    "def main():\n" + indent(script, "    ") + "\n\n\n"
+                )
+                script_content += dedent(
+                    """\
+                            if __name__ == "__main__":
+                                main()
+                            """
+                )
+                with open(script_filename, "w") as script_file:
+                    script_file.write(script_content)
             return text
         except Exception as e:
             log["error"] = str(e)
@@ -121,8 +127,9 @@ class LLMClient:
             with open(self.log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
 
-    def get_script(self, prompt: str):
-        self.conversation.append({"role": "user", "content": f"PROMPT: {prompt}"})
+    def get_script(self, prompt: Optional[str] = None):
+        if prompt:
+            self.conversation.append({"role": "user", "content": prompt})
         response = self.get_response(self.conversation)
-        self.conversation.append({"role": "system", "content": response})
+        self.conversation.append({"role": "assistant", "content": response})
         return parse_script(response)
