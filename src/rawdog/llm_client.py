@@ -3,25 +3,26 @@ import datetime
 import json
 import os
 import re
-from textwrap import dedent
+from textwrap import dedent, indent
+from typing import Optional
 
 from litellm import completion, completion_cost
 
 from rawdog.utils import (
-    rawdog_dir, 
-    get_llm_base_url, 
+    rawdog_dir,
+    get_llm_base_url,
     get_llm_model,
     get_llm_custom_provider,
     set_base_url,
     set_llm_model,
-    set_llm_custom_provider
+    set_llm_custom_provider,
 )
 from rawdog.prompts import script_prompt, script_examples
 
 
 def parse_script(response: str) -> tuple[str, str]:
     """Split the response into a message and a script.
-    
+
     Expected use is: run the script if there is one, otherwise print the message.
     """
     # Parse delimiter
@@ -29,7 +30,7 @@ def parse_script(response: str) -> tuple[str, str]:
     if n_delimiters < 2:
         return f"Error: No script found in response:\n{response}", ""
     segments = response.split("```")
-    message = f'{segments[0]}\n{segments[-1]}'
+    message = f"{segments[0]}\n{segments[-1]}"
     script = "```".join(segments[1:-1]).strip()  # Leave 'inner' delimiters alone
 
     # Check for common mistakes
@@ -48,11 +49,11 @@ def parse_script(response: str) -> tuple[str, str]:
 
 class LLMClient:
 
-    def __init__(self):    
-        self.log_path = rawdog_dir / "logs.jsonl"    
+    def __init__(self):
+        self.log_path = rawdog_dir / "logs.jsonl"
         self.base_url = get_llm_base_url()
         set_base_url(self.base_url)
-        self.model = get_llm_model() or 'gpt-4'
+        self.model = get_llm_model() or "gpt-4"
         set_llm_model(self.model)
         self.custom_provider = get_llm_custom_provider() or None
         set_llm_custom_provider(self.custom_provider)
@@ -70,7 +71,7 @@ class LLMClient:
         ]
 
     def get_response(
-        self, 
+        self,
         messages: list[dict[str, str]],
     ) -> str:
         log = {
@@ -97,13 +98,26 @@ class LLMClient:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             script_filename = self.log_path.parent / f"script_{timestamp}.py"
             _, script = ("", "") if not text else parse_script(text)
-            script_content = dedent(f"""\
-                # Model: {log['model']}
-                # Prompt: {log['prompt']}
-                # Response Cost: {log.get('cost', 'N/A')}
-                """) + script if script else f"INVALID SCRIPT:\n{text}"
-            with open(script_filename, "w") as script_file:
-                script_file.write(script_content)
+            if script:
+                metadata = {
+                    "model": self.model,
+                    "cost": log.get("cost", "N/A"),
+                    "timestamp": timestamp,
+                    "log_version": 0.1,
+                }
+                script_content = (
+                    f"conversation = {json.dumps(messages[2:], indent=4)}\n\n"
+                    f"metadata = {json.dumps(metadata, indent=4)}\n\n\n"
+                    "def main():\n" + indent(script, "    ") + "\n\n\n"
+                )
+                script_content += dedent(
+                    """\
+                            if __name__ == "__main__":
+                                main()
+                            """
+                )
+                with open(script_filename, "w") as script_file:
+                    script_file.write(script_content)
             return text
         except Exception as e:
             log["error"] = str(e)
@@ -112,9 +126,10 @@ class LLMClient:
         finally:
             with open(self.log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
-        
-    def get_script(self, prompt: str):
-        self.conversation.append({"role": "user", "content": f"PROMPT: {prompt}"})
+
+    def get_script(self, prompt: Optional[str] = None):
+        if prompt:
+            self.conversation.append({"role": "user", "content": prompt})
         response = self.get_response(self.conversation)
-        self.conversation.append({"role": "system", "content": response})
+        self.conversation.append({"role": "assistant", "content": response})
         return parse_script(response)

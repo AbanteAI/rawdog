@@ -11,12 +11,17 @@ from rawdog.utils import history_file
 llm_client = LLMClient()  # Will fail with descriptive error message if not found
 
 
-def rawdog(prompt: str, verbose: bool=False):
+def rawdog(prompt: str, verbose: bool = False):
     _continue = True
+    _first = True
     while _continue is True:
         error, script, output = "", "", ""
         try:
-            message, script = llm_client.get_script(prompt)
+            if _first:
+                message, script = llm_client.get_script(prompt)
+                _first = False
+            else:
+                message, script = llm_client.get_script()
             if script:
                 if verbose:
                     _message = f"{message}\n" if message else ""
@@ -36,41 +41,49 @@ def rawdog(prompt: str, verbose: bool=False):
         _continue = output and output.strip().endswith("CONTINUE")
         if error:
             llm_client.conversation.append(
-                {"role": "system", "content": f"Error: {error}"}
+                {"role": "user", "content": f"Error: {error}"}
             )
             print(f"Error: {error}")
             if script and not verbose:
                 print(f"{80 * '-'}{script}{80 * '-'}")
         if output:
             llm_client.conversation.append(
-                {"role": "assistant", "content": f"LAST SCRIPT OUTPUT:\n{output}"}
+                {"role": "user", "content": f"LAST SCRIPT OUTPUT:\n{output}"}
             )
             if verbose or not _continue:
                 print(output)
-        if _continue:
-            llm_client.conversation.append(
-                {"role": "user", "content": prompt}
-            )
 
 
 def banner():
-    print("""   / \__
+    print(
+        """   / \__
   (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
   /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
  /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
-/_____/   U    Rawdog v0.1.1""")
+/_____/   U    Rawdog v0.1.1"""
+    )
 
 
 def main():
-    parser = argparse.ArgumentParser(description='A smart assistant that can execute Python code to help or hurt you.')
-    parser.add_argument('prompt', nargs='*', help='Prompt for direct execution. If empty, enter conversation mode')
-    parser.add_argument('--dry-run', action='store_true', help='Print the script before executing and prompt for confirmation.')
+    parser = argparse.ArgumentParser(
+        description="A smart assistant that can execute Python code to help or hurt you."
+    )
+    parser.add_argument(
+        "prompt",
+        nargs="*",
+        help="Prompt for direct execution. If empty, enter conversation mode",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the script before executing and prompt for confirmation.",
+    )
     args = parser.parse_args()
 
     if history_file.exists():
         readline.read_history_file(history_file)
     readline.set_history_length(1000)
-    
+
     host = os.uname()[1]
     if len(args.prompt) > 0:
         rawdog(" ".join(args.prompt))
