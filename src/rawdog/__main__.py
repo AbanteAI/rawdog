@@ -7,6 +7,7 @@ from contextlib import redirect_stdout
 
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
+from rawdog import __version__
 
 llm_client = LLMClient()  # Will fail with descriptive error message if not found
 
@@ -56,11 +57,11 @@ def rawdog(prompt: str, verbose: bool = False):
 
 def banner():
     print(
-        """   / \__
+        f"""   / \__
   (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
   /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
  /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
-/_____/   U    Rawdog v0.1.1"""
+/_____/   U    Rawdog v{__version__}"""
     )
 
 
