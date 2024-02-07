@@ -1,17 +1,19 @@
-# PROMPT INFORMATION
 conversation = [
     {
         "role": "user",
-        "content": "PROMPT: Can you read the readme and use the information to change rawdog to use mixtral with ollama?"
+        "content": "Can you read the readme and use the information to change rawdog to use mixtral with ollama?"
     }
 ]
 metadata = {
-    "model": "gpt-4",
-    "cost": "0.0321300000",
-    "timestamp": "2024-02-06_13-53-06"
+    "model": "openai/gpt-4-turbo-preview",
+    "cost": "0.0108700000",
+    "timestamp": "2024-02-07_09-00-03",
+    "log_version": 0.1
 }
-# START SCRIPT
-with open("README.md", "r") as f:
-    guide_contents = f.read()
-print(guide_contents)
-print("CONTINUE")
+def main():
+    with open("README.md", "r") as f:
+        content = f.read()
+        print(content)
+    print("CONTINUE")
+if __name__ == "__main__":
+    main()
