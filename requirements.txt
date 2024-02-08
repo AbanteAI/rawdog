@@ -14,3 +14,4 @@ python-dateutil==2.8.2
 pytz==2023.4
 six==1.16.0
 tzdata==2023.4
+pyreadline3==3.4.1; platform_system == "Windows"
