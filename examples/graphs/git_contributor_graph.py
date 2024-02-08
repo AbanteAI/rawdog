@@ -1,5 +1,9 @@
 conversation = [
     {
+        "role": "system",
+        "content": "Today's date is 2024-02-08.\nThe current working directory is /Users/jakekoenig/rawdog, which IS a git repository.\nThe user's operating system is Darwin\n        "
+    },
+    {
         "role": "user",
         "content": "Make a scatter plot of all the contributers to the current repo where the x axis is how many commits, the y axis is how many lines and the color is recency of last commit"
     }
