@@ -69,11 +69,6 @@ def get_llm_model():
     return config.get("llm_model")
 
 
-def get_llm_api_key():
-    config = load_config()
-    return config.get("llm_api_key")
-
-
 def get_llm_custom_provider():
     config = load_config()
     return config.get("llm_custom_provider")
