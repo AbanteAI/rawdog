@@ -8,16 +8,17 @@ from typing import Optional
 
 from litellm import completion, completion_cost
 
+from rawdog.prompts import script_examples, script_prompt
 from rawdog.utils import (
-    rawdog_dir,
+    EnvInfo,
     get_llm_base_url,
-    get_llm_model,
     get_llm_custom_provider,
+    get_llm_model,
+    rawdog_dir,
     set_base_url,
-    set_llm_model,
     set_llm_custom_provider,
+    set_llm_model,
 )
-from rawdog.prompts import script_prompt, script_examples
 
 
 def parse_script(response: str) -> tuple[str, str]:
@@ -68,6 +69,7 @@ class LLMClient:
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
+            {"role": "system", "content": EnvInfo().render_prompt()},
         ]
 
     def get_response(
