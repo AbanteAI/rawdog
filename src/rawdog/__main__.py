@@ -2,12 +2,11 @@ import argparse
 import io
 import os
 import readline
-
 from contextlib import redirect_stdout
 
+from rawdog import __version__
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
-from rawdog import __version__
 
 llm_client = LLMClient()  # Will fail with descriptive error message if not found
 
