@@ -49,13 +49,18 @@ def load_config():
     if config_path.exists():
         with open(config_path, "r") as f:
             return yaml.safe_load(f)
-    else:
-        return {}
 
-
-def save_config(config):
+    # create empty config for users to configure easily
+    config = {
+        "llm_base_url": None,
+        "llm_custom_provider": None,
+        "llm_model": None,
+        "llm_temperature": None,
+    }
     with open(config_path, "w") as f:
         yaml.safe_dump(config, f)
+
+    return config
 
 
 # Config helpers
@@ -77,27 +82,3 @@ def get_llm_custom_provider():
 def get_llm_temperature():
     config = load_config()
     return config.get("llm_temperature")
-
-
-def set_llm_model(model_name: str):
-    config = load_config()
-    config["llm_model"] = model_name
-    save_config(config)
-
-
-def set_base_url(base_url: str):
-    config = load_config()
-    config["llm_base_url"] = base_url
-    save_config(config)
-
-
-def set_llm_custom_provider(custom_provider: str):
-    config = load_config()
-    config["llm_custom_provider"] = custom_provider
-    save_config(config)
-
-
-def set_llm_temperature(temperature: float):
-    config = load_config()
-    config["llm_temperature"] = temperature
-    save_config(config)

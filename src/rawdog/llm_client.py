@@ -16,10 +16,6 @@ from rawdog.utils import (
     get_llm_model,
     get_llm_temperature,
     rawdog_dir,
-    set_base_url,
-    set_llm_custom_provider,
-    set_llm_model,
-    set_llm_temperature,
 )
 
 
@@ -55,14 +51,9 @@ class LLMClient:
     def __init__(self):
         self.log_path = rawdog_dir / "logs.jsonl"
         self.base_url = get_llm_base_url()
-        set_base_url(self.base_url)
         self.model = get_llm_model() or "gpt-4"
-        set_llm_model(self.model)
         self.custom_provider = get_llm_custom_provider() or None
-        set_llm_custom_provider(self.custom_provider)
-        cfg_temperature = get_llm_temperature()
-        self.temperature = cfg_temperature if cfg_temperature is not None else 1.0
-        set_llm_temperature(self.temperature)
+        self.temperature = get_llm_temperature() or 1.0
 
         # In general it's hard to know if the user needs an API key or which environment variables to set
         # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
