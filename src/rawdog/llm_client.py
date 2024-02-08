@@ -14,10 +14,12 @@ from rawdog.utils import (
     get_llm_base_url,
     get_llm_custom_provider,
     get_llm_model,
+    get_llm_temperature,
     rawdog_dir,
     set_base_url,
     set_llm_custom_provider,
     set_llm_model,
+    set_llm_temperature,
 )
 
 
@@ -58,6 +60,9 @@ class LLMClient:
         set_llm_model(self.model)
         self.custom_provider = get_llm_custom_provider() or None
         set_llm_custom_provider(self.custom_provider)
+        cfg_temperature = get_llm_temperature()
+        self.temperature = cfg_temperature if cfg_temperature is not None else 1.0
+        set_llm_temperature(self.temperature)
 
         # In general it's hard to know if the user needs an API key or which environment variables to set
         # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
@@ -66,6 +71,7 @@ class LLMClient:
             if not env_api_key:
                 print("Please set the OPENAI_API_KEY environment variable.")
                 quit()
+
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
@@ -87,7 +93,7 @@ class LLMClient:
                 base_url=self.base_url,
                 model=self.model,
                 messages=messages,
-                temperature=1.0,
+                temperature=self.temperature,
                 custom_llm_provider=self.custom_provider,
             )
             text = (response.choices[0].message.content) or ""
