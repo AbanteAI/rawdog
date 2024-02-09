@@ -52,7 +52,7 @@ Please proceed with caution. This obviously has the potential to cause harm if s
 * `--dry-run`: Print and manually approve each script before executing.
 
 ## Model selection
-Rawdog uses `litellm` for completions with 'gpt-4' as the default. You can adjust the model or
+Rawdog uses `litellm` for completions with 'gpt-4-turbo-preview' as the default. You can adjust the model or
 point it to other providers by modifying `~/.rawdog/config.yaml`. Some examples:
 
 To use gpt-3.5 turbo a minimal config is:
