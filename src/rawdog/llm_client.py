@@ -18,6 +18,8 @@ from rawdog.utils import (
     rawdog_dir,
 )
 
+DEFAULT_MODEL = "gpt-4-turbo-preview"
+
 
 def parse_script(response: str) -> tuple[str, str]:
     """Split the response into a message and a script.
@@ -51,13 +53,17 @@ class LLMClient:
     def __init__(self):
         self.log_path = rawdog_dir / "logs.jsonl"
         self.base_url = get_llm_base_url()
-        self.model = get_llm_model() or "gpt-4"
+        self.model = get_llm_model() or DEFAULT_MODEL
         self.custom_provider = get_llm_custom_provider() or None
         self.temperature = get_llm_temperature() or 1.0
 
         # In general it's hard to know if the user needs an API key or which environment variables to set
         # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
-        if self.model == "gpt-4" and not self.custom_provider and not self.base_url:
+        if (
+            self.model == DEFAULT_MODEL
+            and not self.custom_provider
+            and not self.base_url
+        ):
             env_api_key = os.getenv("OPENAI_API_KEY")
             if not env_api_key:
                 print("Please set the OPENAI_API_KEY environment variable.")
