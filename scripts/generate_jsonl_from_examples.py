@@ -13,7 +13,7 @@ def write_finetuning_data(path):
         if hasattr(module, 'conversation') and hasattr(module, 'main'):
             data = module.conversation
             source = inspect.getsource(module.main).split("\n", 1)[1]
-            data.append({"role": "assistant", "content": dedent(source)})
+            data.append({"role": "assistant", "content": "```\n" + dedent(source) + "```"})
             with open("training_data.jsonl", "a") as f:
                 json.dump(data, f)
                 f.write("\n")
