@@ -1,11 +1,11 @@
 import subprocess
-import sys
 import tempfile
 
+from rawdog.utils import get_rawdog_python_executable
 
-def execute_script(script: str, python_executable: str = None) -> str:
-    if python_executable is None:
-        python_executable = sys.executable
+
+def execute_script(script: str) -> str:
+    python_executable = get_rawdog_python_executable()
     with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp_script:
         tmp_script_name = tmp_script.name
         tmp_script.write(script)
