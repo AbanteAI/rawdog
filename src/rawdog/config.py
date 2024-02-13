@@ -15,24 +15,17 @@ default_config = {
 }
 
 
-def load_config():
-    if config_path.exists():
-        with open(config_path, "r") as f:
-            return yaml.safe_load(f)
-    
-    # create and new config
-    config = default_config.copy()
-    with open(config_path, "w") as f:
-        yaml.safe_dump(config, f)
-    return config
+_config = None
 
 
-def update_config(**kwargs):
-    config = load_config()
-    for k, v in kwargs.items():
-        if k not in default_config:
-            print(f"Warning: {k} is not a valid config key")
+def get_config():
+    global _config
+    if _config is None:
+        if config_path.exists():
+            with open(config_path, "r") as f:
+                _config = yaml.safe_load(f)
         else:
-            config[k] = v
-    with open(config_path, "w") as f:
-        yaml.safe_dump(config, f)
+            _config = default_config.copy()
+            with open(config_path, "w") as f:
+                yaml.safe_dump(_config, f)
+    return _config

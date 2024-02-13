@@ -1,16 +1,40 @@
 import argparse
-import io
 import os
 import platform
 import readline
-from contextlib import redirect_stdout
 
 from rawdog import __version__
+from rawdog.config import default_config, get_config
 from rawdog.execute_script import execute_script
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
 
-llm_client = LLMClient()  # Will fail with descriptive error message if not found
+
+parser = argparse.ArgumentParser(
+    description="A smart assistant that can execute Python code to help or hurt you."
+)
+parser.add_argument(
+    "prompt",
+    nargs="*",
+    help="Prompt for direct execution. If empty, enter conversation mode",
+)
+parser.add_argument(
+    "--dry-run",
+    action="store_true",
+    help="Print the script before executing and prompt for confirmation.",
+)
+for k in default_config.keys():
+    parser.add_argument(f"--{k}", default=None, help=f"Set the {k} config value")
+args = parser.parse_args()
+
+
+config_args = {
+    k: v for k, v in vars(args).items() if k in default_config and v is not None
+}
+config = {**get_config(), **config_args}
+
+
+llm_client = LLMClient(config)  # Will fail with descriptive error message if not found
 
 
 def rawdog(prompt: str, verbose: bool = False):
@@ -65,21 +89,6 @@ def banner():
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="A smart assistant that can execute Python code to help or hurt you."
-    )
-    parser.add_argument(
-        "prompt",
-        nargs="*",
-        help="Prompt for direct execution. If empty, enter conversation mode",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the script before executing and prompt for confirmation.",
-    )
-    args = parser.parse_args()
-
     if history_file.exists():
         readline.read_history_file(history_file)
     readline.set_history_length(1000)

@@ -2,13 +2,11 @@ import ast
 import datetime
 import json
 import os
-import re
 from textwrap import dedent, indent
 from typing import Optional
 
 from litellm import completion, completion_cost
 
-from rawdog.config import load_config
 from rawdog.prompts import script_examples, script_prompt
 from rawdog.utils import EnvInfo, rawdog_dir
 
@@ -42,12 +40,12 @@ def parse_script(response: str) -> tuple[str, str]:
 
 class LLMClient:
 
-    def __init__(self):
+    def __init__(self, config: dict):
         self.log_path = rawdog_dir / "logs.jsonl"
-        
+
         # In general it's hard to know if the user needs an API key or which environment variables to set
-        # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
-        config = load_config()
+        # We do a simple check here for the default case (gpt- models from openai).
+        self.config = config
         if "gpt-" in config.get("llm_model"):
             env_api_key = os.getenv("OPENAI_API_KEY")
             config_api_key = config.get("llm_api_key")
@@ -71,11 +69,10 @@ class LLMClient:
         self,
         messages: list[dict[str, str]],
     ) -> str:
-        config = load_config()
-        base_url = config.get("llm_base_url")
-        model = config.get("llm_model")
-        temperature = config.get("llm_temperature")
-        custom_llm_provider = config.get("llm_custom_provider")
+        base_url = self.config.get("llm_base_url")
+        model = self.config.get("llm_model")
+        temperature = self.config.get("llm_temperature")
+        custom_llm_provider = self.config.get("llm_custom_provider")
 
         log = {
             "model": model,
@@ -88,7 +85,7 @@ class LLMClient:
                 base_url=base_url,
                 model=model,
                 messages=messages,
-                temperature=temperature,
+                temperature=float(temperature),
                 custom_llm_provider=custom_llm_provider,
             )
             text = (response.choices[0].message.content) or ""
