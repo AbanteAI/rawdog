@@ -39,6 +39,7 @@ class LLMClient:
     def get_response(
         self,
         messages: list[dict[str, str]],
+        stream = False,
     ) -> str:
         base_url = self.config.get("llm_base_url")
         model = self.config.get("llm_model")
@@ -58,14 +59,23 @@ class LLMClient:
                 messages=messages,
                 temperature=float(temperature),
                 custom_llm_provider=custom_llm_provider,
+                stream=stream,
             )
-            text = (response.choices[0].message.content) or ""
+            if stream:
+                text = ""
+                for part in response:
+                    content = part.choices[0].delta.content
+                    if content:
+                        print(content, end="")
+                        text += content
+            else:
+                text = (response.choices[0].message.content) or ""
             self.conversation.append({"role": "assistant", "content": text})
             log["response"] = text
             if custom_llm_provider:
                 cost = 0
             else:
-                cost = completion_cost(completion_response=response) or 0
+                cost = completion_cost(model=model, messages=messages, completion=text) or 0
             log["cost"] = f"{float(cost):.10f}"
             metadata = {
                 "model": model,
@@ -81,8 +91,8 @@ class LLMClient:
             with open(rawdog_log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
 
-    def get_script(self, prompt: Optional[str] = None):
+    def get_script(self, prompt: Optional[str] = None, stream=False):
         if prompt:
             self.conversation.append({"role": "user", "content": prompt})
-        response = self.get_response(self.conversation)
+        response = self.get_response(self.conversation, stream=stream)
         return parse_script(response)
