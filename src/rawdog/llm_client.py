@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from textwrap import dedent, indent
 from typing import Optional
 
@@ -9,31 +8,27 @@ from litellm import completion, completion_cost
 from rawdog.logging import log_conversation
 from rawdog.parsing import parse_script
 from rawdog.prompts import script_examples, script_prompt
-from rawdog.utils import (EnvInfo, get_llm_base_url, get_llm_custom_provider,
-                          get_llm_model, get_llm_temperature, rawdog_log_path)
-
-DEFAULT_MODEL = "gpt-4-turbo-preview"
+from rawdog.utils import EnvInfo, rawdog_log_path
 
 
 class LLMClient:
 
-    def __init__(self):
-        self.base_url = get_llm_base_url()
-        self.model = get_llm_model() or DEFAULT_MODEL
-        self.custom_provider = get_llm_custom_provider() or None
-        self.temperature = get_llm_temperature() or 1.0
-
+    def __init__(self, config: dict):
         # In general it's hard to know if the user needs an API key or which environment variables to set
-        # If they're using the defaults they'll need to set the OPENAI_API_KEY environment variable
-        if (
-            self.model == DEFAULT_MODEL
-            and not self.custom_provider
-            and not self.base_url
-        ):
+        # We do a simple check here for the default case (gpt- models from openai).
+        self.config = config
+        if "gpt-" in config.get("llm_model"):
             env_api_key = os.getenv("OPENAI_API_KEY")
-            if not env_api_key:
-                print("Please set the OPENAI_API_KEY environment variable.")
-                quit()
+            config_api_key = config.get("llm_api_key")
+            if config_api_key:
+                os.environ["OPENAI_API_KEY"] = config_api_key
+            elif not env_api_key:
+                print(
+                    "It looks like you're using a GPT model without an API key. "
+                    "You can add your API key by setting the OPENAI_API_KEY environment variable "
+                    "or by adding an llm_api_key field to ~/.rawdog/config.yaml. "
+                    "If this was intentional, you can ignore this message."
+                )
 
         self.conversation = [
             {"role": "system", "content": script_prompt},
@@ -45,30 +40,35 @@ class LLMClient:
         self,
         messages: list[dict[str, str]],
     ) -> str:
+        base_url = self.config.get("llm_base_url")
+        model = self.config.get("llm_model")
+        temperature = self.config.get("llm_temperature")
+        custom_llm_provider = self.config.get("llm_custom_provider")
+
         log = {
-            "model": self.model,
+            "model": model,
             "prompt": messages[-1]["content"],
             "response": None,
             "cost": None,
         }
         try:
             response = completion(
-                base_url=self.base_url,
-                model=self.model,
+                base_url=base_url,
+                model=model,
                 messages=messages,
-                temperature=self.temperature,
-                custom_llm_provider=self.custom_provider,
+                temperature=float(temperature),
+                custom_llm_provider=custom_llm_provider,
             )
             text = (response.choices[0].message.content) or ""
             self.conversation.append({"role": "assistant", "content": text})
             log["response"] = text
-            if self.custom_provider:
+            if custom_llm_provider:
                 cost = 0
             else:
                 cost = completion_cost(completion_response=response) or 0
             log["cost"] = f"{float(cost):.10f}"
             metadata = {
-                "model": self.model,
+                "model": model,
                 "cost": log["cost"],
             }
             log_conversation(self.conversation, metadata=metadata)
