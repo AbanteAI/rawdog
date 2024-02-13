@@ -13,9 +13,6 @@ rawdog_dir.mkdir(exist_ok=True)
 # Command history file
 history_file = rawdog_dir / "cmdline_history"
 
-# Config
-config_path = rawdog_dir / "config.yaml"
-
 
 class EnvInfo:
     def __init__(self, data=None):
@@ -45,45 +42,6 @@ The user's operating system is {os}
         """.format(
             date=self.date, cwd=self.cwd, is_git=self.is_git, os=self.os
         )
-
-
-def load_config():
-    if config_path.exists():
-        with open(config_path, "r") as f:
-            return yaml.safe_load(f)
-
-    # create empty config for users to configure easily
-    config = {
-        "llm_base_url": None,
-        "llm_custom_provider": None,
-        "llm_model": None,
-        "llm_temperature": None,
-    }
-    with open(config_path, "w") as f:
-        yaml.safe_dump(config, f)
-
-    return config
-
-
-# Config helpers
-def get_llm_base_url():
-    config = load_config()
-    return config.get("llm_base_url")
-
-
-def get_llm_model():
-    config = load_config()
-    return config.get("llm_model")
-
-
-def get_llm_custom_provider():
-    config = load_config()
-    return config.get("llm_custom_provider")
-
-
-def get_llm_temperature():
-    config = load_config()
-    return config.get("llm_temperature")
 
 
 # Script execution environment
