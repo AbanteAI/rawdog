@@ -2,12 +2,14 @@ import datetime
 import platform
 import subprocess
 import sys
-import yaml
 from pathlib import Path
 from subprocess import DEVNULL
 
+import yaml
+
 # Rawdog dir
 rawdog_dir = Path.home() / ".rawdog"
+rawdog_log_path = rawdog_dir / "logs.jsonl"
 rawdog_dir.mkdir(exist_ok=True)
 
 # Command history file
@@ -88,14 +90,19 @@ def get_llm_temperature():
 
 # Script execution environment
 def get_rawdog_python_executable():
-    venv_dir = rawdog_dir / 'venv'
+    venv_dir = rawdog_dir / "venv"
     if platform.system() == "Windows":
-        python_executable = venv_dir / 'Scripts' / 'python'
+        python_executable = venv_dir / "Scripts" / "python"
     else:
-        python_executable = venv_dir / 'bin' / 'python'
+        python_executable = venv_dir / "bin" / "python"
     if not venv_dir.exists():
         print(f"Creating virtual environment in {venv_dir}...")
-        subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], stdout=DEVNULL, stderr=DEVNULL, check=True)
+        subprocess.run(
+            [sys.executable, "-m", "venv", str(venv_dir)],
+            stdout=DEVNULL,
+            stderr=DEVNULL,
+            check=True,
+        )
         install_pip_packages("matplotlib", "pandas", "numpy")
     return str(python_executable)
 
@@ -103,4 +110,9 @@ def get_rawdog_python_executable():
 def install_pip_packages(*packages: str):
     python_executable = get_rawdog_python_executable()
     print(f"Installing {', '.join(packages)} with pip...")
-    subprocess.run([python_executable, "-m", "pip", "install", *packages], stdout=DEVNULL, stderr=DEVNULL, check=True)
+    subprocess.run(
+        [python_executable, "-m", "pip", "install", *packages],
+        stdout=DEVNULL,
+        stderr=DEVNULL,
+        check=True,
+    )
