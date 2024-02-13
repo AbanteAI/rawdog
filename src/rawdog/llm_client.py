@@ -78,6 +78,7 @@ class LLMClient:
     def get_response(
         self,
         messages: list[dict[str, str]],
+        stream = False,
     ) -> str:
         log = {
             "model": self.model,
@@ -92,13 +93,22 @@ class LLMClient:
                 messages=messages,
                 temperature=self.temperature,
                 custom_llm_provider=self.custom_provider,
+                stream=stream,
             )
-            text = (response.choices[0].message.content) or ""
+            if stream:
+                text = ""
+                for part in response:
+                    content = part.choices[0].delta.content
+                    if content:
+                        print(content, end="")
+                        text += content
+            else:
+                text = (response.choices[0].message.content) or ""
             log["response"] = text
             if self.custom_provider:
                 cost = 0
             else:
-                cost = completion_cost(completion_response=response) or 0
+                cost = completion_cost(model=self.model, messages=messages, completion=text) or 0
             log["cost"] = f"{float(cost):.10f}"
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             _, script = ("", "") if not text else parse_script(text)
@@ -135,9 +145,9 @@ class LLMClient:
             with open(self.log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
 
-    def get_script(self, prompt: Optional[str] = None):
+    def get_script(self, prompt: Optional[str] = None, stream=False):
         if prompt:
             self.conversation.append({"role": "user", "content": prompt})
-        response = self.get_response(self.conversation)
+        response = self.get_response(self.conversation, stream=stream)
         self.conversation.append({"role": "assistant", "content": response})
         return parse_script(response)

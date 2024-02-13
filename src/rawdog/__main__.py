@@ -20,15 +20,14 @@ def rawdog(prompt: str, verbose: bool = False):
         error, script, output = "", "", ""
         try:
             if _first:
-                message, script = llm_client.get_script(prompt)
+                message, script = llm_client.get_script(prompt, stream=verbose)
                 _first = False
             else:
-                message, script = llm_client.get_script()
+                message, script = llm_client.get_script(stream=verbose)
             if script:
                 if verbose:
-                    _message = f"{message}\n" if message else ""
-                    print(f"{80 * '-'}\n{_message}{script}\n{80 * '-'}")
-                    if input("Proceed with execution? (Y/n):").strip().lower() == "n":
+                    print(f"{80 * '-'}")
+                    if input("Execute script in markdown block? (Y/n):").strip().lower() == "n":
                         raise Exception("Execution cancelled by user")
                 output = execute_script(script)
             elif message:
