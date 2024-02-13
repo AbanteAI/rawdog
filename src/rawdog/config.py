@@ -2,13 +2,12 @@ import yaml
 
 from rawdog.utils import rawdog_dir
 
-
 config_path = rawdog_dir / "config.yaml"
 
 
 default_config = {
     "llm_api_key": None,
-    "llm_base_url": "https://api.openai.com/v1",
+    "llm_base_url": None,
     "llm_model": "gpt-4-turbo-preview",
     "llm_custom_provider": None,
     "llm_temperature": 1.0,
@@ -18,7 +17,7 @@ default_config = {
 _config = None
 
 
-def get_config():
+def read_config_file():
     global _config
     if _config is None:
         if config_path.exists():
@@ -33,3 +32,18 @@ def get_config():
             with open(config_path, "w") as f:
                 yaml.safe_dump(_config, f)
     return _config
+
+
+def add_config_flags_to_argparser(parser):
+    for k in default_config.keys():
+        parser.add_argument(f"--{k}", default=None, help=f"Set the {k} config value")
+
+
+def get_config(args=None):
+    config = read_config_file()
+    if args:
+        config_args = {
+            k: v for k, v in vars(args).items() if k in default_config and v is not None
+        }
+        config = {**config, **config_args}
+    return config

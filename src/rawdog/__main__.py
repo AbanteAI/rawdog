@@ -4,40 +4,13 @@ import platform
 import readline
 
 from rawdog import __version__
-from rawdog.config import default_config, get_config
+from rawdog.config import add_config_flags_to_argparser, get_config
 from rawdog.execute_script import execute_script
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
 
 
-parser = argparse.ArgumentParser(
-    description="A smart assistant that can execute Python code to help or hurt you."
-)
-parser.add_argument(
-    "prompt",
-    nargs="*",
-    help="Prompt for direct execution. If empty, enter conversation mode",
-)
-parser.add_argument(
-    "--dry-run",
-    action="store_true",
-    help="Print the script before executing and prompt for confirmation.",
-)
-for k in default_config.keys():
-    parser.add_argument(f"--{k}", default=None, help=f"Set the {k} config value")
-args = parser.parse_args()
-
-
-config_args = {
-    k: v for k, v in vars(args).items() if k in default_config and v is not None
-}
-config = {**get_config(), **config_args}
-
-
-llm_client = LLMClient(config)  # Will fail with descriptive error message if not found
-
-
-def rawdog(prompt: str, verbose: bool = False):
+def rawdog(prompt: str, llm_client, verbose: bool = False):
     _continue = True
     _first = True
     while _continue is True:
@@ -89,13 +62,31 @@ def banner():
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="A smart assistant that can execute Python code to help or hurt you."
+    )
+    parser.add_argument(
+        "prompt",
+        nargs="*",
+        help="Prompt for direct execution. If empty, enter conversation mode",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the script before executing and prompt for confirmation.",
+    )
+    add_config_flags_to_argparser(parser)
+    args = parser.parse_args()
+    config = get_config(args)
+    llm_client = LLMClient(config)
+
     if history_file.exists():
         readline.read_history_file(history_file)
     readline.set_history_length(1000)
 
     host = platform.uname()[1]
     if len(args.prompt) > 0:
-        rawdog(" ".join(args.prompt))
+        rawdog(" ".join(args.prompt), llm_client, verbose=args.dry_run)
     else:
         banner()
         while True:
@@ -105,7 +96,7 @@ def main():
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
-                rawdog(prompt, verbose=args.dry_run)
+                rawdog(prompt, llm_client, verbose=args.dry_run)
             except KeyboardInterrupt:
                 print("Exiting...")
                 break

@@ -49,9 +49,9 @@ class LLMClient:
         if "gpt-" in config.get("llm_model"):
             env_api_key = os.getenv("OPENAI_API_KEY")
             config_api_key = config.get("llm_api_key")
-            if not env_api_key and config_api_key:
+            if config_api_key:
                 os.environ["OPENAI_API_KEY"] = config_api_key
-            else:
+            elif not env_api_key:
                 print(
                     "It looks like you're using a GPT model without an API key. "
                     "You can add your API key by setting the OPENAI_API_KEY environment variable "
