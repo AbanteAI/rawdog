@@ -1,19 +1,16 @@
 import argparse
-import io
 import os
 import platform
 import readline
-from contextlib import redirect_stdout
 
 from rawdog import __version__
+from rawdog.config import add_config_flags_to_argparser, get_config
 from rawdog.execute_script import execute_script
 from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
 
-llm_client = LLMClient()  # Will fail with descriptive error message if not found
 
-
-def rawdog(prompt: str, verbose: bool = False):
+def rawdog(prompt: str, llm_client, verbose: bool = False):
     _continue = True
     _first = True
     while _continue is True:
@@ -77,7 +74,10 @@ def main():
         action="store_true",
         help="Print the script before executing and prompt for confirmation.",
     )
+    add_config_flags_to_argparser(parser)
     args = parser.parse_args()
+    config = get_config(args)
+    llm_client = LLMClient(config)
 
     if history_file.exists():
         readline.read_history_file(history_file)
@@ -85,7 +85,7 @@ def main():
 
     host = platform.uname()[1]
     if len(args.prompt) > 0:
-        rawdog(" ".join(args.prompt))
+        rawdog(" ".join(args.prompt), llm_client, verbose=args.dry_run)
     else:
         banner()
         while True:
@@ -95,7 +95,7 @@ def main():
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
-                rawdog(prompt, verbose=args.dry_run)
+                rawdog(prompt, llm_client, verbose=args.dry_run)
             except KeyboardInterrupt:
                 print("Exiting...")
                 break
