@@ -24,6 +24,10 @@ def get_config():
         if config_path.exists():
             with open(config_path, "r") as f:
                 _config = yaml.safe_load(f)
+            # These fields may be null in older config files
+            for field in ("llm_model", "llm_temperature"):
+                if not _config.get(field):
+                    _config[field] = default_config[field]
         else:
             _config = default_config.copy()
             with open(config_path, "w") as f:
