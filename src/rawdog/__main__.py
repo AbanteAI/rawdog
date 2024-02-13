@@ -34,7 +34,7 @@ def rawdog(prompt: str, llm_client, verbose: bool = False):
         except Exception as e:
             error = f"Execution error: {e}"
 
-        _continue = output and output.strip().endswith("CONTINUE")
+        _continue = output and not output.strip().endswith("TASK COMPLETE")
         if error:
             llm_client.conversation.append(
                 {"role": "user", "content": f"Error: {error}"}
@@ -46,8 +46,7 @@ def rawdog(prompt: str, llm_client, verbose: bool = False):
             llm_client.conversation.append(
                 {"role": "user", "content": f"LAST SCRIPT OUTPUT:\n{output}"}
             )
-            if verbose or not _continue:
-                print(output)
+            print(output)
 
 
 def banner():
