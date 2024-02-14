@@ -3,11 +3,12 @@ import os
 import platform
 import readline
 
+import history_file
+
 from rawdog import __version__
 from rawdog.config import add_config_flags_to_argparser, get_config
 from rawdog.execute_script import execute_script
 from rawdog.llm_client import LLMClient
-from rawdog.utils import history_file
 
 
 def rawdog(prompt: str, llm_client, verbose: bool = False):
@@ -24,15 +25,18 @@ def rawdog(prompt: str, llm_client, verbose: bool = False):
             if script:
                 if verbose:
                     print(f"{80 * '-'}")
-                    if input("Execute script in markdown block? (Y/n):").strip().lower() == "n":
+                    if (
+                        input("Execute script in markdown block? (Y/n): ")
+                        .strip()
+                        .lower()
+                        == "n"
+                    ):
                         raise Exception("Execution cancelled by user")
-                output = execute_script(script)
+                output, error = execute_script(script)
             elif message:
                 print(message)
         except KeyboardInterrupt:
             error = "Execution interrupted by user"
-        except Exception as e:
-            error = f"Execution error: {e}"
 
         _continue = output and output.strip().endswith("CONTINUE")
         if error:

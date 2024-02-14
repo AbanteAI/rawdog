@@ -39,7 +39,7 @@ class LLMClient:
     def get_response(
         self,
         messages: list[dict[str, str]],
-        stream = False,
+        stream=False,
     ) -> str:
         base_url = self.config.get("llm_base_url")
         model = self.config.get("llm_model")
@@ -75,7 +75,10 @@ class LLMClient:
             if custom_llm_provider:
                 cost = 0
             else:
-                cost = completion_cost(model=model, messages=messages, completion=text) or 0
+                cost = (
+                    completion_cost(model=model, messages=messages, completion=text)
+                    or 0
+                )
             log["cost"] = f"{float(cost):.10f}"
             metadata = {
                 "model": model,
