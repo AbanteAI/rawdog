@@ -1,6 +1,4 @@
 import argparse
-import os
-import platform
 import readline
 
 from rawdog import __version__
@@ -55,18 +53,18 @@ def rawdog(prompt: str, config, llm_client):
 
 
 def banner():
-    print(
-        f"""   / \__
+    print(f"""   / \__
   (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
   /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
  /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
-/_____/   U    Rawdog v{__version__}"""
-    )
+/_____/   U    Rawdog v{__version__}""")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="A smart assistant that can execute Python code to help or hurt you."
+        description=(
+            "A smart assistant that can execute Python code to help or hurt you."
+        )
     )
     parser.add_argument(
         "prompt",
@@ -92,7 +90,7 @@ def main():
                 if llm_client.session_cost > 0:
                     print(f"Session cost: ${llm_client.session_cost:.4f}")
                 print("What can I do for you? (Ctrl-C to exit)")
-                prompt = input(f"> ")
+                prompt = input("> ")
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")

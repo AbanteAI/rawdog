@@ -37,12 +37,10 @@ def log_conversation(
     for function_name, function in functions.items():
         script += f"def {function_name}():\n" + indent(function, "    ") + "\n\n\n"
 
-    script += dedent(
-        f"""\
+    script += dedent(f"""\
         if __name__ == "__main__":
             function_{len(functions)}()
-        """
-    )
+        """)
 
     if filename is None:
         script_filename = rawdog_dir / f"script_{timestamp}.py"
