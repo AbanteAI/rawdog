@@ -26,19 +26,17 @@ def rawdog(prompt: str, config, llm_client):
                 if verbose:
                     print(f"{80 * '-'}")
                     if (
-                        input("Execute script in markdown block? (Y/n):")
+                        input("Execute script in markdown block? (Y/n): ")
                         .strip()
                         .lower()
                         == "n"
                     ):
                         raise Exception("Execution cancelled by user")
-                output = execute_script(script)
+                output, error = execute_script(script, llm_client)
             elif message:
                 print(message)
         except KeyboardInterrupt:
             error = "Execution interrupted by user"
-        except Exception as e:
-            error = f"Execution error: {e}"
 
         _continue = output and output.strip().endswith("CONTINUE")
         if error:
