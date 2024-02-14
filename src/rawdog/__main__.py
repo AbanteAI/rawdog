@@ -10,8 +10,7 @@ from rawdog.llm_client import LLMClient
 from rawdog.utils import history_file
 
 
-def rawdog(prompt: str, config):
-    llm_client = LLMClient(config)
+def rawdog(prompt: str, config, llm_client):
     verbose = config.get("dry_run")
     _continue = True
     _first = True
@@ -79,6 +78,7 @@ def main():
     add_config_flags_to_argparser(parser)
     args = parser.parse_args()
     config = get_config(args)
+    llm_client = LLMClient(config)
 
     if history_file.exists():
         readline.read_history_file(history_file)
@@ -86,7 +86,7 @@ def main():
 
     host = platform.uname()[1]
     if len(args.prompt) > 0:
-        rawdog(" ".join(args.prompt), config)
+        rawdog(" ".join(args.prompt), config, llm_client)
     else:
         banner()
         while True:
@@ -96,7 +96,11 @@ def main():
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
-                rawdog(prompt, config)
+                rawdog(prompt, config, llm_client)
             except KeyboardInterrupt:
                 print("Exiting...")
                 break
+
+
+if __name__ == "__main__":
+    main()
