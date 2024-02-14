@@ -1,5 +1,6 @@
 import datetime
 import platform
+import subprocess
 from pathlib import Path
 
 # Rawdog dir
@@ -33,12 +34,17 @@ class EnvInfo:
         self.os = platform.system()
         self.is_git = "IS" if Path(".git").exists() else "is NOT"
         self.cwd_info = self._get_cwd_info()
-        self.last_commit = "" if not self.is_git else "\nThe last commit message is: " + (
-            subprocess.run(
-                ["git", "log", "-1", "--pretty=%B"], stdout=subprocess.PIPE
+        self.last_commit = (
+            ""
+            if not self.is_git
+            else "\nThe last commit message is: "
+            + (
+                subprocess.run(
+                    ["git", "log", "-1", "--pretty=%B"], stdout=subprocess.PIPE
+                )
+                .stdout.decode()
+                .strip()
             )
-            .stdout.decode()
-            .strip()
         )
 
     def _get_cwd_info(self, max_items=100):
@@ -49,8 +55,8 @@ class EnvInfo:
             name = ("" if not item.is_dir() else "/") + item.name
             last_modified = datetime.datetime.fromtimestamp(
                 item.stat().st_mtime
-            ).strftime("%Y-%m-%d %H:%M:%S") 
-            size = len(list(item.iterdir())) if item.is_dir() else  item.stat().st_size
+            ).strftime("%Y-%m-%d %H:%M:%S")
+            size = len(list(item.iterdir())) if item.is_dir() else item.stat().st_size
             unit = " bytes" if item.is_file() else " items"
             output.append(f"{last_modified} {size:10}{unit} {name}")
         if not output:
@@ -64,10 +70,10 @@ The current working directory is {cwd}, which {is_git} a git repository.
 The user's operating system is {os}.
 The contents of the current working directory are:
 {cwd_info}{last_commit}""".format(
-            date=self.date, 
-            cwd=self.cwd, 
-            is_git=self.is_git, 
-            os=self.os, 
+            date=self.date,
+            cwd=self.cwd,
+            is_git=self.is_git,
+            os=self.os,
             cwd_info=self.cwd_info,
-            last_commit=self.last_commit, 
+            last_commit=self.last_commit,
         )

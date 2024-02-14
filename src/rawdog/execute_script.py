@@ -36,7 +36,7 @@ def install_pip_packages(*packages: str):
     )
 
 
-def execute_script(script: str) -> str:
+def execute_script(script: str, llm_client) -> str:
     python_executable = get_rawdog_python_executable()
     with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_script:
         tmp_script_name = tmp_script.name
@@ -55,15 +55,16 @@ def execute_script(script: str) -> str:
                 match = re.search(r"No module named '(\w+)'", error)
                 if match:
                     module = match.group(1)
+                    module_name = llm_client.get_python_package(module)
                     if (
                         input(
-                            f"Rawdog wants to use {module}. Install to rawdog's venv with pip (Y/n): "
+                            f"Rawdog wants to use {module_name}. Install to rawdog's venv with pip (Y/n): "
                         )
                         .strip()
                         .lower()
                         != "n"
                     ):
-                        install_result = install_pip_packages(module)
+                        install_result = install_pip_packages(module_name)
                         if install_result.returncode == 0:
                             retry = True
                         else:

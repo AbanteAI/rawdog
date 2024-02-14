@@ -3,12 +3,11 @@ import os
 import platform
 import readline
 
-import history_file
-
 from rawdog import __version__
 from rawdog.config import add_config_flags_to_argparser, get_config
 from rawdog.execute_script import execute_script
 from rawdog.llm_client import LLMClient
+from rawdog.utils import history_file
 
 
 def rawdog(prompt: str, config, llm_client):
@@ -33,7 +32,7 @@ def rawdog(prompt: str, config, llm_client):
                         == "n"
                     ):
                         raise Exception("Execution cancelled by user")
-                output, error = execute_script(script)
+                output, error = execute_script(script, llm_client)
             elif message:
                 print(message)
         except KeyboardInterrupt:
