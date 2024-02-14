@@ -35,6 +35,10 @@ class LLMClient:
             {"role": "system", "content": script_examples},
             {"role": "system", "content": EnvInfo().render_prompt()},
         ]
+        model = self.config.get("llm_model")
+        if "ft:" in model or "rawdog" in model or "abante" in model:
+            # A finetuned model shouldn't need our system prompt
+            self.conversation = self.conversation[2:]
         self.session_cost = 0
 
     def get_python_package(self, import_name: str):
