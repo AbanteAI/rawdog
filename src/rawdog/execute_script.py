@@ -58,7 +58,7 @@ def execute_script(script: str, llm_client) -> str:
                     module_name = llm_client.get_python_package(module)
                     if (
                         input(
-                            f"Rawdog wants to use {module_name}. Install to rawdog's venv with pip (Y/n): "
+                            f"Rawdog wants to use {module_name}. Install to rawdog's venv with pip? (Y/n): "
                         )
                         .strip()
                         .lower()
