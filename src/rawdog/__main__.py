@@ -11,7 +11,8 @@ from rawdog.execute_script import execute_script
 from rawdog.llm_client import LLMClient
 
 
-def rawdog(prompt: str, llm_client, verbose: bool = False):
+def rawdog(prompt: str, config, llm_client):
+    verbose = config.get("dry_run")
     _continue = True
     _first = True
     while _continue is True:
@@ -73,11 +74,6 @@ def main():
         nargs="*",
         help="Prompt for direct execution. If empty, enter conversation mode",
     )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the script before executing and prompt for confirmation.",
-    )
     add_config_flags_to_argparser(parser)
     args = parser.parse_args()
     config = get_config(args)
@@ -87,19 +83,25 @@ def main():
         readline.read_history_file(history_file)
     readline.set_history_length(1000)
 
-    host = platform.uname()[1]
     if len(args.prompt) > 0:
-        rawdog(" ".join(args.prompt), llm_client, verbose=args.dry_run)
+        rawdog(" ".join(args.prompt), config, llm_client)
     else:
         banner()
         while True:
             try:
-                print("\nWhat can I do for you? (Ctrl-C to exit)")
-                prompt = input(f"{host}@{os.getcwd()} > ")
+                print("")
+                if llm_client.session_cost > 0:
+                    print(f"Session cost: ${llm_client.session_cost:.4f}")
+                print("What can I do for you? (Ctrl-C to exit)")
+                prompt = input(f"> ")
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
-                rawdog(prompt, llm_client, verbose=args.dry_run)
+                rawdog(prompt, config, llm_client)
             except KeyboardInterrupt:
                 print("Exiting...")
                 break
+
+
+if __name__ == "__main__":
+    main()
