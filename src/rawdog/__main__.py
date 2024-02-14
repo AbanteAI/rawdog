@@ -90,7 +90,10 @@ def main():
         banner()
         while True:
             try:
-                print("\nWhat can I do for you? (Ctrl-C to exit)")
+                print("")
+                if llm_client.session_cost > 0:
+                    print(f"Session cost: ${llm_client.session_cost:.4f}")
+                print("What can I do for you? (Ctrl-C to exit)")
                 prompt = input(f"> ")
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
