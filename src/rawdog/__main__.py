@@ -84,7 +84,6 @@ def main():
         readline.read_history_file(history_file)
     readline.set_history_length(1000)
 
-    host = platform.uname()[1]
     if len(args.prompt) > 0:
         rawdog(" ".join(args.prompt), config, llm_client)
     else:
@@ -92,7 +91,7 @@ def main():
         while True:
             try:
                 print("\nWhat can I do for you? (Ctrl-C to exit)")
-                prompt = input(f"{host}@{os.getcwd()} > ")
+                prompt = input(f"> ")
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
