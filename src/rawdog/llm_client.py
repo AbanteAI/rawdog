@@ -35,12 +35,43 @@ class LLMClient:
             {"role": "system", "content": script_examples},
             {"role": "system", "content": EnvInfo().render_prompt()},
         ]
+        self.session_cost = 0
 
-    def get_response(
-        self,
-        messages: list[dict[str, str]],
-        stream = False,
-    ) -> str:
+    def get_python_package(self, import_name: str):
+        base_url = self.config.get("llm_base_url")
+        model = self.config.get("llm_model")
+        custom_llm_provider = self.config.get("llm_custom_provider")
+
+        messages = [
+            {
+                "role": "system",
+                "content": dedent(
+                    f"""\
+                     The following python import failed: import {import_name}. \
+                     Respond with only one word which is the name of the package \
+                     on pypi. For instance if the import is "import numpy", you \
+                     should respond with "numpy". If the import is "import PIL" \
+                     you should respond with "Pillow". If you are unsure respond \
+                     with the original import name."""
+                ),
+            }
+        ]
+
+        response = completion(
+            base_url=base_url,
+            model=model,
+            messages=messages,
+            temperature=0.01,
+            custom_llm_provider=custom_llm_provider,
+        )
+
+        return response.choices[0].message.content
+
+    def get_script(self, prompt: Optional[str] = None, stream=False):
+        if prompt:
+            self.conversation.append({"role": "user", "content": prompt})
+        messages = self.conversation.copy()
+
         base_url = self.config.get("llm_base_url")
         model = self.config.get("llm_model")
         temperature = self.config.get("llm_temperature")
@@ -75,14 +106,17 @@ class LLMClient:
             if custom_llm_provider:
                 cost = 0
             else:
-                cost = completion_cost(model=model, messages=messages, completion=text) or 0
+                cost = (
+                    completion_cost(model=model, messages=messages, completion=text)
+                    or 0
+                )
+            self.session_cost += cost
             log["cost"] = f"{float(cost):.10f}"
             metadata = {
                 "model": model,
                 "cost": log["cost"],
             }
             log_conversation(self.conversation, metadata=metadata)
-            return text
         except Exception as e:
             log["error"] = str(e)
             print(f"Error:\n", str(log))
@@ -90,9 +124,4 @@ class LLMClient:
         finally:
             with open(rawdog_log_path, "a") as f:
                 f.write(json.dumps(log) + "\n")
-
-    def get_script(self, prompt: Optional[str] = None, stream=False):
-        if prompt:
-            self.conversation.append({"role": "user", "content": prompt})
-        response = self.get_response(self.conversation, stream=stream)
-        return parse_script(response)
+        return parse_script(text)
