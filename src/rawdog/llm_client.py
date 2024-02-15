@@ -7,7 +7,7 @@ from litellm import completion, completion_cost
 
 from rawdog.logging import log_conversation
 from rawdog.parsing import parse_script
-from rawdog.prompts import script_examples, script_prompt
+from rawdog.prompts import script_examples, script_prompt, leash_prompt
 from rawdog.utils import EnvInfo, rawdog_log_path
 
 
@@ -40,6 +40,28 @@ class LLMClient:
     def add_message(self, role: str, content: str):
         self.conversation.append({"role": role, "content": content})
 
+    def double_check_script(self, original_prompt: str, script: str) -> Optional[str]:
+        conversation = [
+            {"role": "system", "content": leash_prompt},
+            {"role": "user", "content": original_prompt},
+            {"role": "assistant", "content": script},
+        ]
+
+        response = completion(
+            base_url=self.config.get("llm_base_url"),
+            model=self.config.get("leash_model"),
+            messages=conversation,
+            temperature=0.01,
+            custom_llm_provider=self.config.get("llm_custom_provider"),
+        )
+
+        content = response.choices[0].message.content
+
+        if "SAFE" in content:
+            return None
+        else:
+            return content
+
     def get_python_package(self, import_name: str):
         base_url = self.config.get("llm_base_url")
         model = self.config.get("llm_model")
@@ -48,13 +70,15 @@ class LLMClient:
         messages = [
             {
                 "role": "system",
-                "content": dedent(f"""\
+                "content": dedent(
+                    f"""\
                      The following python import failed: import {import_name}. \
                      Respond with only one word which is the name of the package \
                      on pypi. For instance if the import is "import numpy", you \
                      should respond with "numpy". If the import is "import PIL" \
                      you should respond with "Pillow". If you are unsure respond \
-                     with the original import name."""),
+                     with the original import name."""
+                ),
             }
         ]
 

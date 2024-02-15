@@ -32,6 +32,19 @@ def rawdog(prompt: str, config, llm_client):
                     ):
                         llm_client.add_message("user", "User chose not to run script")
                         break
+                elif config.get("leash"):
+                    double_check = llm_client.double_check_script(prompt, script)
+                    if double_check:
+                        print(script)
+                        print(
+                            "The leash model thought the script was unsafe for the following reason:"
+                        )
+                        print(double_check)
+                        if input("Execute anyway? (y/N): ").strip().lower() != "y":
+                            llm_client.add_message(
+                                "user", "User chose not to run script"
+                            )
+                            break
                 output, error = execute_script(script, llm_client)
             elif message:
                 print(message)
@@ -53,12 +66,24 @@ def rawdog(prompt: str, config, llm_client):
                 print(output)
 
 
-def banner():
-    print(f"""   / \__
-  (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
-  /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
- /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
-/_____/   U    Rawdog v{__version__}""")
+def banner(config):
+    if config.get("dry_run") or config.get("leash"):
+        print(
+            f"""           / \__
+  _       (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
+    \     /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
+     \   /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
+       \/\/\/\/   U    Rawdog v{__version__}
+             OO"""
+        )
+    else:
+        print(
+            f"""   / \__
+      (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
+      /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
+     /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
+    /_____/   U    Rawdog v{__version__}"""
+        )
 
 
 def main():
@@ -84,7 +109,7 @@ def main():
     if len(args.prompt) > 0:
         rawdog(" ".join(args.prompt), config, llm_client)
     else:
-        banner()
+        banner(config)
         while True:
             try:
                 print("")

@@ -13,11 +13,15 @@ default_config = {
     "llm_temperature": 1.0,
     "dry_run": False,
     "retries": 2,
+    "leash_model": "gpt-3.5-turbo",
+    "leash": False,
 }
 
 setting_descriptions = {
     "dry_run": "Print the script before executing and prompt for confirmation.",
     "retries": "If the script fails, retry this many times before giving up.",
+    "leash_model": "The model to use for the leash feature.",
+    "leash": "If set, the script will be double checked before running.",
 }
 
 
