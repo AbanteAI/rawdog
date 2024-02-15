@@ -30,7 +30,9 @@ def read_config_file():
         if config_path.exists():
             with open(config_path, "r") as f:
                 _config = yaml.safe_load(f)
-            missing_fields = [k for k in default_config if k not in _config]
+            missing_fields = [
+                k for k in default_config if k not in _config or _config[k] is None
+            ]
             if missing_fields:
                 for k in missing_fields:
                     _config[k] = default_config[k]
