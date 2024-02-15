@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 import argparse
-import os
+import time
 
 from openai import OpenAI
 
 client = OpenAI()
-import time
 
 parser = argparse.ArgumentParser(description="Fine tuning GPT-3")
 parser.add_argument(

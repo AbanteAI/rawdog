@@ -1,6 +1,6 @@
 import json
 import os
-from textwrap import dedent, indent
+from textwrap import dedent
 from typing import Optional
 
 from litellm import completion, completion_cost
@@ -12,7 +12,6 @@ from rawdog.utils import EnvInfo, rawdog_log_path
 
 
 class LLMClient:
-
     def __init__(self, config: dict):
         # In general it's hard to know if the user needs an API key or which environment variables to set
         # We do a simple check here for the default case (gpt- models from openai).
@@ -24,22 +23,26 @@ class LLMClient:
                 os.environ["OPENAI_API_KEY"] = config_api_key
             elif not env_api_key:
                 print(
-                    "It looks like you're using a GPT model without an API key. "
-                    "You can add your API key by setting the OPENAI_API_KEY environment variable "
-                    "or by adding an llm_api_key field to ~/.rawdog/config.yaml. "
-                    "If this was intentional, you can ignore this message."
+                    "It looks like you're using a GPT model without an API key. You can"
+                    " add your API key by setting the OPENAI_API_KEY environment"
+                    " variable or by adding an llm_api_key field to"
+                    " ~/.rawdog/config.yaml. If this was intentional, you can ignore"
+                    " this message."
                 )
 
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
-            {"role": "system", "content": EnvInfo().render_prompt()},
+            {"role": "system", "content": EnvInfo(config=self.config).render_prompt()},
         ]
         model = self.config.get("llm_model")
         if "ft:" in model or "rawdog" in model or "abante" in model:
             # A finetuned model shouldn't need our system prompt
             self.conversation = self.conversation[2:]
         self.session_cost = 0
+
+    def add_message(self, role: str, content: str):
+        self.conversation.append({"role": role, "content": content})
 
     def get_python_package(self, import_name: str):
         base_url = self.config.get("llm_base_url")
@@ -49,15 +52,13 @@ class LLMClient:
         messages = [
             {
                 "role": "system",
-                "content": dedent(
-                    f"""\
+                "content": dedent(f"""\
                      The following python import failed: import {import_name}. \
                      Respond with only one word which is the name of the package \
                      on pypi. For instance if the import is "import numpy", you \
                      should respond with "numpy". If the import is "import PIL" \
                      you should respond with "Pillow". If you are unsure respond \
-                     with the original import name."""
-                ),
+                     with the original import name."""),
             }
         ]
 
@@ -123,7 +124,7 @@ class LLMClient:
             log_conversation(self.conversation, metadata=metadata)
         except Exception as e:
             log["error"] = str(e)
-            print(f"Error:\n", str(log))
+            print("Error:\n", str(log))
             raise e
         finally:
             with open(rawdog_log_path, "a") as f:

@@ -9,64 +9,48 @@ conversation = [
     },
     {
         "role": "system",
-        "content": "Today's date is 2024-02-09.\nThe current working directory is /Users/jakekoenig/rawdog, which IS a git repository.\nThe user's operating system is Darwin\n        "
+        "content": "Today's date is 2024-02-09.\nThe current working directory is /Users/biobootloader/code/calculator, which IS a git repository.\nThe user's operating system is Darwin\n        "
     },
     {
         "role": "user",
-        "content": "Can you import all the classes defined in src/rawdog/ to its __init__.py?"
+        "content": "summarize the git diff"
     },
     {
         "role": "assistant",
         "content": "function_1"
+    },
+    {
+        "role": "user",
+        "content": "LAST SCRIPT OUTPUT:\ndiff --git a/hello_script.py b/hello_script.py\nindex fe57e1f..d0872b1 100644\n--- a/hello_script.py\n+++ b/hello_script.py\n@@ -1 +1,2 @@\n-print(\"Hello, user!\")\n\\ No newline at end of file\n+name = input(\"What is your name? \")\n+print(f\"Hello, {name}!\")\n\nCONTINUE\n"
+    },
+    {
+        "role": "assistant",
+        "content": "function_2"
     }
 ]
 
 metadata = {
-    "timestamp": "2024-02-09_02-03-37",
+    "timestamp": "2024-02-09_12-25-50",
     "log_version": "0.2",
-    "model": "openai/gpt-4-turbo-preview",
-    "cost": "0.0185800000"
+    "model": "gpt-4-turbo-preview",
+    "cost": "0.0131800000"
 }
 
 
 def function_1():
-    import os
-    import ast
+    import subprocess
 
-    # Define the source directory and target __init__.py
-    src_directory = "src/rawdog"
-    init_file = os.path.join(src_directory, "__init__.py")
+    # Capture the output of git diff so I can see it to write the summary
+    diff_output = subprocess.check_output(["git", "diff"], universal_newlines=True)
+    print(diff_output)
+    print("CONTINUE")
 
-    # List all the .py files in src/rawdog/ directory
-    src_files = [f for f in os.listdir(src_directory) if f.endswith('.py') and f != "__init__.py"]
 
-    # Prepare a list to hold import statements
-    imports = []
-
-    # Extract class names from each file
-    for src_file in src_files:
-        full_path = os.path.join(src_directory, src_file)
-        with open(full_path, "r") as file:
-            file_content = file.read()
-            try:
-                parsed_ast = ast.parse(file_content)
-                for node in ast.walk(parsed_ast):
-                    if isinstance(node, ast.ClassDef):
-                        # If a class name is found, prepare the import statement
-                        class_name = node.name
-                        module_name = src_file[:-3]  # Remove .py extension
-                        imports.append(f"from .{module_name} import {class_name}")
-            except SyntaxError:
-                continue
-
-    # Write the import statements to __init__.py
-    if imports:
-        with open(init_file, "w") as init_f:
-            for imp in imports:
-                init_f.write(imp + "\n")
-
-    print("Classes imported to __init__.py.")
+def function_2():
+    print(
+        "'hello_script.py' was modified. It now prompts the user for their name and uses it when it says hello."
+    )
 
 
 if __name__ == "__main__":
-    function_1()
+    function_2()

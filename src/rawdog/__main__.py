@@ -1,6 +1,4 @@
 import argparse
-import os
-import platform
 import readline
 
 from rawdog import __version__
@@ -12,6 +10,7 @@ from rawdog.utils import history_file
 
 def rawdog(prompt: str, config, llm_client):
     verbose = config.get("dry_run")
+    retries = int(config.get("retries"))
     _continue = True
     _first = True
     while _continue is True:
@@ -24,49 +23,49 @@ def rawdog(prompt: str, config, llm_client):
                 message, script = llm_client.get_script(stream=verbose)
             if script:
                 if verbose:
-                    print(f"{80 * '-'}")
+                    print(f"\n{80 * '-'}")
                     if (
                         input("Execute script in markdown block? (Y/n): ")
                         .strip()
                         .lower()
                         == "n"
                     ):
-                        raise Exception("Execution cancelled by user")
+                        llm_client.add_message("user", "User chose not to run script")
+                        break
                 output, error = execute_script(script, llm_client)
             elif message:
                 print(message)
         except KeyboardInterrupt:
-            error = "Execution interrupted by user"
+            break
 
-        _continue = output and output.strip().endswith("CONTINUE")
+        _continue = (
+            output and output.strip().endswith("CONTINUE") or error and retries > 0
+        )
         if error:
-            llm_client.conversation.append(
-                {"role": "user", "content": f"Error: {error}"}
-            )
+            retries -= 1
+            llm_client.add_message("user", f"Error: {error}")
             print(f"Error: {error}")
             if script and not verbose:
-                print(f"{80 * '-'}{script}{80 * '-'}")
+                print(f"{80 * '-'}\n{script}\n{80 * '-'}")
         if output:
-            llm_client.conversation.append(
-                {"role": "user", "content": f"LAST SCRIPT OUTPUT:\n{output}"}
-            )
+            llm_client.add_message("user", f"LAST SCRIPT OUTPUT:\n{output}")
             if verbose or not _continue:
                 print(output)
 
 
 def banner():
-    print(
-        f"""   / \__
+    print(f"""   / \__
   (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
   /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
  /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
-/_____/   U    Rawdog v{__version__}"""
-    )
+/_____/   U    Rawdog v{__version__}""")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="A smart assistant that can execute Python code to help or hurt you."
+        description=(
+            "A smart assistant that can execute Python code to help or hurt you."
+        )
     )
     parser.add_argument(
         "prompt",
@@ -92,7 +91,7 @@ def main():
                 if llm_client.session_cost > 0:
                     print(f"Session cost: ${llm_client.session_cost:.4f}")
                 print("What can I do for you? (Ctrl-C to exit)")
-                prompt = input(f"> ")
+                prompt = input("> ")
                 # Save history after each command to avoid losing it in case of crash
                 readline.write_history_file(history_file)
                 print("")
