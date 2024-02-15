@@ -37,6 +37,9 @@ class LLMClient:
         ]
         self.session_cost = 0
 
+    def add_message(self, role: str, content: str):
+        self.conversation.append({"role": role, "content": content})
+
     def get_python_package(self, import_name: str):
         base_url = self.config.get("llm_base_url")
         model = self.config.get("llm_model")
