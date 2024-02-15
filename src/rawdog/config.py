@@ -12,10 +12,12 @@ default_config = {
     "llm_custom_provider": None,
     "llm_temperature": 1.0,
     "dry_run": False,
+    "retries": 2,
 }
 
 setting_descriptions = {
     "dry_run": "Print the script before executing and prompt for confirmation.",
+    "retries": "If the script fails, retry this many times before giving up.",
 }
 
 
@@ -28,10 +30,12 @@ def read_config_file():
         if config_path.exists():
             with open(config_path, "r") as f:
                 _config = yaml.safe_load(f)
-            # These fields may be null in older config files
-            for field in ("llm_model", "llm_temperature"):
-                if not _config.get(field):
-                    _config[field] = default_config[field]
+            missing_fields = [k for k in default_config if k not in _config]
+            if missing_fields:
+                for k in missing_fields:
+                    _config[k] = default_config[k]
+                with open(config_path, "w") as f:
+                    yaml.safe_dump(_config, f)
         else:
             _config = default_config.copy()
             with open(config_path, "w") as f:

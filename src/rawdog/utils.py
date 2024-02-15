@@ -13,7 +13,8 @@ history_file = rawdog_dir / "cmdline_history"
 
 
 class EnvInfo:
-    def __init__(self, data=None):
+    def __init__(self, config=None, data=None):
+        self.config = config
         if data:
             self._set_from_dict(data)
         else:
@@ -27,6 +28,7 @@ class EnvInfo:
         self.is_git = data["is_git"]
         self.cwd_info = data["cwd_info"]
         self.last_commit = data["last_commit"]
+        self.retries = data["retries"]
 
     def _set_from_env(self):
         self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -46,6 +48,8 @@ class EnvInfo:
                 .strip()
             )
         )
+        _retries = 0 if self.config is None else self.config.get("retries")
+        self.retries = f"\nYou'll get {_retries} retries."
 
     def _get_cwd_info(self, max_items=100):
         output = []
@@ -69,11 +73,12 @@ Today's date is {date}.
 The current working directory is {cwd}, which {is_git} a git repository.
 The user's operating system is {os}.
 The contents of the current working directory are:
-{cwd_info}{last_commit}""".format(
+{cwd_info}{last_commit}{retries}""".format(
             date=self.date,
             cwd=self.cwd,
             is_git=self.is_git,
             os=self.os,
             cwd_info=self.cwd_info,
             last_commit=self.last_commit,
+            retries=self.retries,
         )

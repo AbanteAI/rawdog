@@ -33,9 +33,12 @@ class LLMClient:
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
-            {"role": "system", "content": EnvInfo().render_prompt()},
+            {"role": "system", "content": EnvInfo(config=self.config).render_prompt()},
         ]
         self.session_cost = 0
+
+    def add_message(self, role: str, content: str):
+        self.conversation.append({"role": role, "content": content})
 
     def get_python_package(self, import_name: str):
         base_url = self.config.get("llm_base_url")
