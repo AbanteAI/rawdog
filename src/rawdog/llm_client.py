@@ -70,15 +70,13 @@ class LLMClient:
         messages = [
             {
                 "role": "system",
-                "content": dedent(
-                    f"""\
+                "content": dedent(f"""\
                      The following python import failed: import {import_name}. \
                      Respond with only one word which is the name of the package \
                      on pypi. For instance if the import is "import numpy", you \
                      should respond with "numpy". If the import is "import PIL" \
                      you should respond with "Pillow". If you are unsure respond \
-                     with the original import name."""
-                ),
+                     with the original import name."""),
             }
         ]
 

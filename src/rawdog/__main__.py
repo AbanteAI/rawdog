@@ -37,7 +37,8 @@ def rawdog(prompt: str, config, llm_client):
                     if double_check:
                         print(script)
                         print(
-                            "The leash model thought the script was unsafe for the following reason:"
+                            "The leash model thought the script was unsafe for the"
+                            " following reason:"
                         )
                         print(double_check)
                         if input("Execute anyway? (y/N): ").strip().lower() != "y":
@@ -68,22 +69,18 @@ def rawdog(prompt: str, config, llm_client):
 
 def banner(config):
     if config.get("dry_run") or config.get("leash"):
-        print(
-            f"""           / \__
+        print(f"""           / \__
   _       (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
     \     /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
      \   /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
        \/\/\/\/   U    Rawdog v{__version__}
-             OO"""
-        )
+             OO""")
     else:
-        print(
-            f"""   / \__
+        print(f"""   / \__
       (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
       /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
      /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
-    /_____/   U    Rawdog v{__version__}"""
-        )
+    /_____/   U    Rawdog v{__version__}""")
 
 
 def main():
