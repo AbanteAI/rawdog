@@ -7,7 +7,7 @@ from litellm import completion, completion_cost
 
 from rawdog.logging import log_conversation
 from rawdog.parsing import parse_script
-from rawdog.prompts import script_examples, script_prompt, leash_prompt
+from rawdog.prompts import leash_prompt, script_examples, script_prompt
 from rawdog.utils import EnvInfo, rawdog_log_path
 
 
