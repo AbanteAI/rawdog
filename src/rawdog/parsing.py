@@ -20,10 +20,10 @@ def parse_script(response: str) -> tuple[str, str]:
         script = "\n".join(script.split("\n")[1:])
     try:  # Make sure it isn't json
         script = json.loads(script)
-    except Exception as e:
+    except Exception:
         pass
     try:  # Make sure it's valid python
         ast.parse(script)
-    except SyntaxError as e:
+    except SyntaxError:
         return f"Script contains invalid Python:\n{response}", ""
     return message, script

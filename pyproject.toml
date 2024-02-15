@@ -26,3 +26,15 @@ Issues = "https://github.com/AbanteAI/rawdog/issues"
 
 [project.scripts]
 rawdog = "rawdog.__main__:main"
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["examples", "src/rawdog/prompts.py"]
+
+[tool.isort]
+profile = "black"
+extend_skip = ["examples"]
+
+[tool.black]
+preview = "true"
+extend-exclude = "examples"
