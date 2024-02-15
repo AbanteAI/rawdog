@@ -10,6 +10,7 @@ from rawdog.utils import history_file
 
 def rawdog(prompt: str, config, llm_client):
     verbose = config.get("dry_run")
+    retries = int(config.get("retries"))
     _continue = True
     _first = True
     while _continue is True:
@@ -35,9 +36,14 @@ def rawdog(prompt: str, config, llm_client):
                 print(message)
         except KeyboardInterrupt:
             error = "Execution interrupted by user"
+        except Exception as e:
+            error = str(e)
 
-        _continue = output and output.strip().endswith("CONTINUE")
+        _continue = (
+            output and output.strip().endswith("CONTINUE") or error and retries > 0
+        )
         if error:
+            retries -= 1
             llm_client.conversation.append(
                 {"role": "user", "content": f"Error: {error}"}
             )

@@ -33,7 +33,7 @@ class LLMClient:
         self.conversation = [
             {"role": "system", "content": script_prompt},
             {"role": "system", "content": script_examples},
-            {"role": "system", "content": EnvInfo().render_prompt()},
+            {"role": "system", "content": EnvInfo(config=self.config).render_prompt()},
         ]
         self.session_cost = 0
 
