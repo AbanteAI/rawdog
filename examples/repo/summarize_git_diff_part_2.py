@@ -40,7 +40,7 @@ metadata = {
 def function_1():
     import subprocess
 
-    # Attempt to capture the output of git diff
+    # Capture the output of git diff so I can see it to write the summary
     diff_output = subprocess.check_output(["git", "diff"], universal_newlines=True)
     print(diff_output)
     print("CONTINUE")
