@@ -10,7 +10,7 @@ default_config = {
     "llm_api_key": None,
     "llm_base_url": None,
     "llm_model": "gpt-4-turbo-preview",
-    "pip_model": None
+    "pip_model": None,
     "llm_custom_provider": None,
     "llm_temperature": 1.0,
     "retries": 2,
