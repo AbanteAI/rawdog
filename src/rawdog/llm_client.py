@@ -46,7 +46,14 @@ class LLMClient:
 
     def get_python_package(self, import_name: str):
         base_url = self.config.get("llm_base_url")
-        model = self.config.get("llm_model")
+        model = self.config.get("pip_model")
+        llm_model = self.config.get("llm_model")
+        if model is None:
+            if "ft:" in llm_model or "rawdog" in llm_model or "abante" in llm_model:
+                model = "gpt-3.5-turbo"
+            else:
+                model = llm_model
+
         custom_llm_provider = self.config.get("llm_custom_provider")
 
         messages = [
