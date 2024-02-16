@@ -49,7 +49,8 @@ Please proceed with caution. This obviously has the potential to cause harm if s
     ```
 
 ## Optional Arguments
-* `--dry-run`: Print and manually approve each script before executing.
+* `--leash`: (default False) Print and manually approve each script before executing.
+* `--retries`: (default 2) If rawdog's script throws an error, review the error and try again.
 
 ## Model selection
 Rawdog uses `litellm` for completions with 'gpt-4-turbo-preview' as the default. You can adjust the model or
