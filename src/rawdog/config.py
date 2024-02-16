@@ -10,6 +10,7 @@ default_config = {
     "llm_api_key": None,
     "llm_base_url": None,
     "llm_model": "gpt-4-turbo-preview",
+    "pip_model": None
     "llm_custom_provider": None,
     "llm_temperature": 1.0,
     "retries": 2,
@@ -21,6 +22,7 @@ default_config = {
 setting_descriptions = {
     "retries": "If the script fails, retry this many times before giving up.",
     "leash": "Print the script before executing and prompt for confirmation.",
+    "pip_model": "The model to use to get package name from import name.",
 }
 
 
