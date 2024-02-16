@@ -91,4 +91,4 @@ The contents of the current working directory are:
 
 
 def is_finetuned_model(model: str):
-    return "ft:" in model or "rawdog" in model or "abante" in model
+    return "rawdog" in model or "abante" in model
