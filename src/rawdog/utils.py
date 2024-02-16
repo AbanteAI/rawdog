@@ -60,8 +60,12 @@ class EnvInfo:
             last_modified = datetime.datetime.fromtimestamp(
                 item.stat().st_mtime
             ).strftime("%Y-%m-%d %H:%M:%S")
-            size = len(list(item.iterdir())) if item.is_dir() else item.stat().st_size
-            unit = " bytes" if item.is_file() else " items"
+            size, unit = 0, ""
+            try:
+                size = len(list(item.iterdir())) if item.is_dir() else item.stat().st_size
+                unit = " bytes" if item.is_file() else " items"
+            except Exception:
+                pass
             output.append(f"{last_modified} {size:10}{unit} {name}")
         if not output:
             return "The directory is empty."
