@@ -108,8 +108,3 @@ print("The essay is about...")
 ```
 -------------------------------------------------------------------------------
 """
-
-leash_prompt = """\
-Your job is to double check a script for safety. You will be given a prompt and the python script generated from the prompt. \
-If the script won't have any side effects except the minimum necessary to accomplish the goal of the prompt then you should respond with "SAFE" \
-and nothing else. If you think the script is unsafe in any way return a short explanation of why."""

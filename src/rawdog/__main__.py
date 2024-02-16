@@ -9,7 +9,7 @@ from rawdog.utils import history_file
 
 
 def rawdog(prompt: str, config, llm_client):
-    verbose = config.get("dry_run")
+    leash = config.get("leash")
     retries = int(config.get("retries"))
     _continue = True
     _first = True
@@ -17,12 +17,12 @@ def rawdog(prompt: str, config, llm_client):
         error, script, output = "", "", ""
         try:
             if _first:
-                message, script = llm_client.get_script(prompt, stream=verbose)
+                message, script = llm_client.get_script(prompt, stream=leash)
                 _first = False
             else:
-                message, script = llm_client.get_script(stream=verbose)
+                message, script = llm_client.get_script(stream=leash)
             if script:
-                if verbose:
+                if leash:
                     print(f"\n{80 * '-'}")
                     if (
                         input("Execute script in markdown block? (Y/n): ")
@@ -32,20 +32,6 @@ def rawdog(prompt: str, config, llm_client):
                     ):
                         llm_client.add_message("user", "User chose not to run script")
                         break
-                elif config.get("leash"):
-                    double_check = llm_client.double_check_script(prompt, script)
-                    if double_check:
-                        print(script)
-                        print(
-                            "The leash model thought the script was unsafe for the"
-                            " following reason:"
-                        )
-                        print(double_check)
-                        if input("Execute anyway? (y/N): ").strip().lower() != "y":
-                            llm_client.add_message(
-                                "user", "User chose not to run script"
-                            )
-                            break
                 output, error = execute_script(script, llm_client)
             elif message:
                 print(message)
@@ -59,24 +45,26 @@ def rawdog(prompt: str, config, llm_client):
             retries -= 1
             llm_client.add_message("user", f"Error: {error}")
             print(f"Error: {error}")
-            if script and not verbose:
+            if script and not leash:
                 print(f"{80 * '-'}\n{script}\n{80 * '-'}")
         if output:
             llm_client.add_message("user", f"LAST SCRIPT OUTPUT:\n{output}")
-            if verbose or not _continue:
+            if leash or not _continue:
                 print(output)
 
 
 def banner(config):
-    if config.get("dry_run") or config.get("leash"):
-        print(f"""           / \__
+    if config.get("leash"):
+        print(f"""\
+           / \__
   _       (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
     \     /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
      \   /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
        \/\/\/\/   U    Rawdog v{__version__}
              OO""")
     else:
-        print(f"""   / \__
+        print(f"""\
+       / \__
       (    @\___   ┳┓┏┓┏ ┓┳┓┏┓┏┓
       /         O  ┣┫┣┫┃┃┃┃┃┃┃┃┓
      /   (_____/   ┛┗┛┗┗┻┛┻┛┗┛┗┛
