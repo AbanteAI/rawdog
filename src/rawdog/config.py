@@ -34,7 +34,8 @@ def read_config_file():
             with open(config_path, "r") as f:
                 _config = yaml.safe_load(f)
             missing_fields = {
-                k: v for k, v in default_config.items() 
+                k: v
+                for k, v in default_config.items()
                 if k not in _config or (v is not None and _config[k] is None)
             }
             if missing_fields:
@@ -42,7 +43,9 @@ def read_config_file():
                 if "leash" in missing_fields and _config.get("dry_run"):
                     missing_fields["leash"] = True
                     del _config["dry_run"]
-                    print("  - dry_run: deprecated on v0.1.4, setting leash=True instead")
+                    print(
+                        "  - dry_run: deprecated on v0.1.4, setting leash=True instead"
+                    )
                 for k, v in missing_fields.items():
                     print(f"  + {k}: {v}")
                     _config[k] = v
@@ -66,7 +69,9 @@ def add_config_flags_to_argparser(parser):
             parser.add_argument(f"--{normalized}", action="store_true", help=help_text)
         else:
             parser.add_argument(f"--{normalized}", default=None, help=help_text)
-    parser.add_argument("--dry-run", action="store_true", help="Deprecated, use --leash instead)")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Deprecated, use --leash instead)"
+    )
 
 
 def get_config(args=None):
