@@ -32,14 +32,14 @@ def rawdog(prompt: str, config, llm_client):
                     ):
                         llm_client.add_message("user", "User chose not to run script")
                         break
-                output, error = execute_script(script, llm_client)
+                output, error, return_code = execute_script(script, llm_client)
             elif message:
                 print(message)
         except KeyboardInterrupt:
             break
 
-        _continue = (
-            output and output.strip().endswith("CONTINUE") or error and retries > 0
+        _continue = (output and output.strip().endswith("CONTINUE")) or (
+            return_code != 0 and error and retries > 0
         )
         if error:
             retries -= 1

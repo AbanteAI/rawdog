@@ -36,7 +36,7 @@ def install_pip_packages(*packages: str):
     )
 
 
-def execute_script(script: str, llm_client) -> str:
+def execute_script(script: str, llm_client) -> tuple[str, str, int]:
     python_executable = get_rawdog_python_executable()
     with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_script:
         tmp_script_name = tmp_script.name
@@ -51,6 +51,7 @@ def execute_script(script: str, llm_client) -> str:
             )
             output = result.stdout
             error = result.stderr
+            return_code = result.returncode
             if error and "ModuleNotFoundError: No module named" in error:
                 match = re.search(r"No module named '(\w+)'", error)
                 if match:
@@ -70,4 +71,4 @@ def execute_script(script: str, llm_client) -> str:
                             retry = True
                         else:
                             print("Failed to install package")
-    return output, error
+    return output, error, return_code
