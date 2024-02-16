@@ -88,3 +88,6 @@ The contents of the current working directory are:
             last_commit=self.last_commit,
             retries=self.retries,
         )
+
+def is_finetuned_model(model: str):
+    return "ft:" in model or "rawdog" in model or "abante" in model

@@ -8,7 +8,7 @@ from litellm import completion, completion_cost
 from rawdog.logging import log_conversation
 from rawdog.parsing import parse_script
 from rawdog.prompts import script_examples, script_prompt
-from rawdog.utils import EnvInfo, rawdog_log_path
+from rawdog.utils import EnvInfo, is_finetuned_model, rawdog_log_path
 
 
 class LLMClient:
@@ -35,10 +35,6 @@ class LLMClient:
             {"role": "system", "content": script_examples},
             {"role": "system", "content": EnvInfo(config=self.config).render_prompt()},
         ]
-        model = self.config.get("llm_model")
-        if "ft:" in model or "rawdog" in model or "abante" in model:
-            # A finetuned model shouldn't need our system prompt
-            self.conversation = self.conversation[2:]
         self.session_cost = 0
 
     def add_message(self, role: str, content: str):
@@ -49,7 +45,7 @@ class LLMClient:
         model = self.config.get("pip_model")
         llm_model = self.config.get("llm_model")
         if model is None:
-            if "ft:" in llm_model or "rawdog" in llm_model or "abante" in llm_model:
+            if is_finetuned_model(llm_model):
                 model = "gpt-3.5-turbo"
             else:
                 model = llm_model
@@ -95,6 +91,9 @@ class LLMClient:
             "response": None,
             "cost": None,
         }
+        if is_finetuned_model(model):
+            base_url = "https://api.mentat.ai"
+            custom_llm_provider = "openai"
         try:
             response = completion(
                 base_url=base_url,
