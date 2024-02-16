@@ -62,7 +62,9 @@ class EnvInfo:
             ).strftime("%Y-%m-%d %H:%M:%S")
             size, unit = 0, ""
             try:
-                size = len(list(item.iterdir())) if item.is_dir() else item.stat().st_size
+                size = (
+                    len(list(item.iterdir())) if item.is_dir() else item.stat().st_size
+                )
                 unit = " bytes" if item.is_file() else " items"
             except Exception:
                 pass
