@@ -14,7 +14,7 @@ def rawdog(prompt: str, config, llm_client):
     _continue = True
     _first = True
     while _continue is True:
-        error, script, output = "", "", ""
+        error, script, output, return_code = "", "", "", 0
         try:
             if _first:
                 message, script = llm_client.get_script(prompt, stream=leash)
