@@ -92,7 +92,7 @@ class LLMClient:
             "cost": None,
         }
         if is_finetuned_model(model):
-            base_url = "https://api.mentat.ai"
+            base_url = "https://api.mentat.ai/v1"
             custom_llm_provider = "openai"
         try:
             response = completion(
