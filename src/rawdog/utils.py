@@ -34,11 +34,12 @@ class EnvInfo:
         self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.cwd = Path.cwd()
         self.os = platform.system()
-        self.is_git = "IS" if Path(".git").exists() else "is NOT"
+        _is_git = Path(".git").exists()
+        self.is_git = "IS" if _is_git else "is NOT"
         self.cwd_info = self._get_cwd_info()
         self.last_commit = (
             ""
-            if not self.is_git
+            if not _is_git
             else "\nThe last commit message is: "
             + (
                 subprocess.run(
