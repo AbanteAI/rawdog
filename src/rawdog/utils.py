@@ -22,7 +22,7 @@ class EnvInfo:
 
     def _set_from_dict(self, data):
         """Used when preparing fine-tuning examples"""
-        self.data = data["date"]
+        self.date = data["date"]
         self.cwd = data["cwd"]
         self.os = data["os"]
         self.is_git = data["is_git"]
