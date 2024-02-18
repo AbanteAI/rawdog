@@ -9,48 +9,42 @@ from rawdog.utils import history_file
 
 
 def rawdog(prompt: str, config, llm_client):
+    llm_client.add_message("user", prompt)
     leash = config.get("leash")
     retries = int(config.get("retries"))
     _continue = True
-    _first = True
     while _continue is True:
+        _continue = False
         error, script, output, return_code = "", "", "", 0
         try:
-            if _first:
-                message, script = llm_client.get_script(prompt, stream=leash)
-                _first = False
-            else:
-                message, script = llm_client.get_script(stream=leash)
+            if leash:
+                print(80 * "-")
+            message, script = llm_client.get_script()
             if script:
                 if leash:
-                    print(f"\n{80 * '-'}")
-                    if (
-                        input("Execute script in markdown block? (Y/n): ")
-                        .strip()
-                        .lower()
-                        == "n"
-                    ):
+                    _ok = input(
+                        f"\n{38 * '-'} Execute script in markdown block? (Y/n):"
+                    )
+                    if _ok.strip().lower() == "n":
                         llm_client.add_message("user", "User chose not to run script")
                         break
                 output, error, return_code = execute_script(script, llm_client)
-            elif message:
+            elif not leash and message:
                 print(message)
         except KeyboardInterrupt:
             break
 
-        _continue = (output and output.strip().endswith("CONTINUE")) or (
-            return_code != 0 and error and retries > 0
-        )
-        if error:
-            retries -= 1
-            llm_client.add_message("user", f"Error: {error}")
-            print(f"Error: {error}")
-            if script and not leash:
-                print(f"{80 * '-'}\n{script}\n{80 * '-'}")
         if output:
             llm_client.add_message("user", f"LAST SCRIPT OUTPUT:\n{output}")
-            if leash or not _continue:
-                print(output)
+            if output.endswith("CONTINUE"):
+                _continue = True
+        if error:
+            llm_client.add_message("user", f"Error: {error}")
+        if return_code != 0:
+            retries -= 1
+            if retries > 0:
+                print("Retrying...\n")
+                _continue = True
 
 
 def banner(config):

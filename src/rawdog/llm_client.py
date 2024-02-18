@@ -1,7 +1,6 @@
 import json
 import os
 from textwrap import dedent
-from typing import Optional
 
 from litellm import completion, completion_cost
 
@@ -75,15 +74,14 @@ class LLMClient:
 
         return response.choices[0].message.content
 
-    def get_script(self, prompt: Optional[str] = None, stream=False):
-        if prompt:
-            self.conversation.append({"role": "user", "content": prompt})
+    def get_script(self):
         messages = self.conversation.copy()
 
         base_url = self.config.get("llm_base_url")
         model = self.config.get("llm_model")
         temperature = self.config.get("llm_temperature")
         custom_llm_provider = self.config.get("llm_custom_provider")
+        stream = self.config.get("leash")
 
         log = {
             "model": model,

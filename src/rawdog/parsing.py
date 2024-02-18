@@ -10,7 +10,7 @@ def parse_script(response: str) -> tuple[str, str]:
     # Parse delimiter
     n_delimiters = response.count("```")
     if n_delimiters < 2:
-        return f"Error: No script found in response:\n{response}", ""
+        return response, ""
     segments = response.split("```")
     message = f"{segments[0]}\n{segments[-1]}"
     script = "```".join(segments[1:-1]).strip()  # Leave 'inner' delimiters alone
