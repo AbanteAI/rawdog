@@ -1,3 +1,0 @@
-litellm==1.22.3
-packaging==23.2
-pyreadline3==3.4.1; platform_system == "Windows"
