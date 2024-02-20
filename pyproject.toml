@@ -11,7 +11,8 @@ version = "0.1.6"
 description = "An AI command-line assistant"
 readme = "README.md"
 dependencies = [
-    "litellm>=1.22.3"
+    "litellm>=1.22.3",
+    "pyreadline3==3.4.1; platform_system == 'Windows'"
 ]
 requires-python = ">=3.8"
 classifiers = [
