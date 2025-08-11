@@ -44,7 +44,7 @@ class AnthropicClient(LLMClient):
             temperature=self.temperature,
             tools=[build_anthropic_tool_schema(tool) for tool in self.tools.values()],
             system=self.system,
-            messages=self.conversation,
+            messages=self.messages,
             tool_choice={"type": "any"},  # Only allow tool calls
         )
         # TODO: update cost
@@ -66,7 +66,7 @@ class AnthropicClient(LLMClient):
                     }
                 )
         assert assistant_message, "No tool_use in response"
-        self.add_assistant_message(assistant_message)
+        self.messages.append({"role": "assistant", "content": assistant_message})
 
         # Extract the tool call data
         user_message = []
@@ -85,5 +85,5 @@ class AnthropicClient(LLMClient):
     def paused(self):
         return any(
             message["type"] == "tool_use" and message["name"] == "wait_for_feedback"
-            for message in self.conversation[-2]["content"]
+            for message in self.messages[-2]["content"]
         )

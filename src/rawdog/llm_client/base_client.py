@@ -14,6 +14,10 @@ class LLMClient:
                 from rawdog.llm_client.anthropic_client import AnthropicClient
 
                 return AnthropicClient(config)
+            elif model.startswith("gpt"):
+                from rawdog.llm_client.openai_client import OpenAIClient
+
+                return OpenAIClient(config)
             else:
                 raise ValueError(f"Unsupported model: {model}")
 
@@ -23,19 +27,15 @@ class LLMClient:
         """Initialize common variables"""
         self.config = config
         self.log_id = f"rawdog_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-        self.conversation = []
+        self.messages = []
         self.session_cost = 0
         self._initialize_client(system_prompt="You are Rawdog, a helpful assistant.")
 
     def add_user_message(self, message: list[dict]):
-        self.conversation.append({"role": "user", "content": message})
-
-    def add_assistant_message(self, message: list[dict]):
-        self.conversation.append({"role": "assistant", "content": message})
+        """Add a user message to the conversation"""
+        self.messages.append({"role": "user", "content": message})
 
     def step(self):
-        if self.conversation[-1]["role"] != "user":
-            raise ValueError("Can only step after a user message")
         try:
             return self._step()
         finally:
@@ -46,7 +46,7 @@ class LLMClient:
             json.dump(
                 {
                     "config": self.config,
-                    "conversation": self.conversation,
+                    "messages": self.messages,
                     "version": __version__,
                 },
                 f,
