@@ -1,4 +1,4 @@
-from rawdog.tools.base_tool import Tool
+from rawdog.tools.base_tool import Tool, ToolOutputText
 
 
 class WaitForFeedbackTool(Tool):
@@ -6,5 +6,5 @@ class WaitForFeedbackTool(Tool):
     description = "Wait for feedback from the user"
     inputs = []
 
-    def run(self) -> None:
-        return "Waiting for user feedback"
+    def run(self) -> ToolOutputText:
+        return ToolOutputText(text="Waiting for user feedback")

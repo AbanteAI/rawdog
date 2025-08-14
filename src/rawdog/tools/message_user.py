@@ -1,4 +1,4 @@
-from rawdog.tools.base_tool import Tool, ToolInput
+from rawdog.tools.base_tool import Tool, ToolInput, ToolOutputText
 
 
 class MessageUserTool(Tool):
@@ -13,6 +13,6 @@ class MessageUserTool(Tool):
         )
     ]
 
-    def run(self, message: str) -> str:
+    def run(self, message: str) -> ToolOutputText:
         print(message)
-        return "Sent message to user"
+        return ToolOutputText(text="Sent message to user")

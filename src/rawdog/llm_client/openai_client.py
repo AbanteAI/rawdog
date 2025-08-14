@@ -5,7 +5,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 from rawdog.llm_client.base_client import LLMClient
-from rawdog.tools import tools, Tool
+from rawdog.tools import tools, Tool, ToolOutputText, ToolOutputImage
 
 load_dotenv()
 
@@ -73,13 +73,34 @@ class OpenAIClient(LLMClient):
         for tool_use in function_calls:
             tool = self.tools[tool_use["name"]]
             content = tool.run(**json.loads(tool_use["arguments"]))
-            self.messages.append(
-                {
-                    "type": "function_call_output",
-                    "call_id": tool_use["call_id"],
-                    "output": content,
-                }
-            )
+            if isinstance(content, ToolOutputText):
+                self.messages.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": tool_use["call_id"],
+                        "output": content.text,
+                    }
+                )
+            elif isinstance(content, ToolOutputImage):
+                image_url = f"data:{content.media_type};{content.type},{content.data}"
+                self.messages.extend(
+                    [
+                        {
+                            "type": "function_call_output",
+                            "call_id": tool_use["call_id"],
+                            "output": "See image",
+                        },
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "input_image",
+                                    "image_url": image_url,
+                                }
+                            ],
+                        },
+                    ]
+                )
 
     def paused(self):
         in_last_function_call_block = False

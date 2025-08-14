@@ -34,13 +34,15 @@ def get_model(model: str) -> Tuple[str, "LLMClient"]:
 
     if model in anthropic_models:
         from rawdog.llm_client.anthropic_client import AnthropicClient
+
         return anthropic_models[model], AnthropicClient
     elif model in openai_models:
         from rawdog.llm_client.openai_client import OpenAIClient
+
         return openai_models[model], OpenAIClient
     else:
         raise ValueError(f"Unsupported model: {model}")
-    
+
 
 class LLMClient:
     def __new__(cls, config: dict):

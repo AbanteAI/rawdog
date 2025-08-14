@@ -4,7 +4,7 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 
 from rawdog.llm_client.base_client import LLMClient
-from rawdog.tools import tools, Tool
+from rawdog.tools import tools, Tool, ToolOutputText, ToolOutputImage
 
 load_dotenv()
 
@@ -73,13 +73,31 @@ class AnthropicClient(LLMClient):
         for tool_use in assistant_message:
             tool = self.tools[tool_use["name"]]
             content = tool.run(**tool_use["input"])
-            user_message.append(
-                {
-                    "type": "tool_result",
-                    "tool_use_id": tool_use["id"],
-                    "content": content,
-                }
-            )
+            if isinstance(content, ToolOutputText):
+                user_message.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tool_use["id"],
+                        "content": content.text,
+                    }
+                )
+            elif isinstance(content, ToolOutputImage):
+                user_message.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tool_use["id"],
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": content.type,
+                                    "media_type": content.media_type,
+                                    "data": content.data,
+                                },
+                            }
+                        ],
+                    }
+                )
         self.add_user_message(user_message)
 
     def paused(self):
