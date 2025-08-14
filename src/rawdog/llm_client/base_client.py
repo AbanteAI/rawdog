@@ -1,25 +1,55 @@
+from __future__ import annotations
+
 import datetime
 import json
+from typing import Tuple
 
 from rawdog import __version__
 from rawdog.utils import rawdog_dir
 
+
+def get_model(model: str) -> Tuple[str, "LLMClient"]:
+    """Get the full model name and choose the correct client"""
+    anthropic_models = {
+        "claude": "claude-sonnet-4-20250514",
+        "claude-sonnet-4": "claude-sonnet-4-20250514",
+        "claude-opus-4-1-20250805": "claude-opus-4-1-20250805",
+        "claude-opus-4-20250514": "claude-opus-4-20250514",
+        "claude-sonnet-4-20250514": "claude-sonnet-4-20250514",
+        "claude-3-7-sonnet-20250219": "claude-3-7-sonnet-20250219",
+        "claude-3-5-haiku-20241022": "claude-3-5-haiku-20241022",
+        "claude-3-haiku-20240307": "claude-3-haiku-20240307",
+    }
+
+    openai_models = {
+        "gpt-4o": "gpt-4o-2024-08-06",
+        "gpt-5": "gpt-5-2025-08-07",
+        "gpt-5-2025-08-07": "gpt-5-2025-08-07",
+        "gpt-5-mini-2025-08-07": "gpt-5-mini-2025-08-07",
+        "gpt-5-nano-2025-08-07": "gpt-5-nano-2025-08-07",
+        "gpt-4o-2024-08-06": "gpt-4o-2024-08-06",
+        "o3-mini": "o3-mini",
+        "o3": "o3",
+    }
+
+    if model in anthropic_models:
+        from rawdog.llm_client.anthropic_client import AnthropicClient
+        return anthropic_models[model], AnthropicClient
+    elif model in openai_models:
+        from rawdog.llm_client.openai_client import OpenAIClient
+        return openai_models[model], OpenAIClient
+    else:
+        raise ValueError(f"Unsupported model: {model}")
+    
 
 class LLMClient:
     def __new__(cls, config: dict):
         """Route to appropriate LLM client based on model name"""
         if cls is LLMClient:
             model = config.get("llm_model")
-            if model.startswith("claude"):
-                from rawdog.llm_client.anthropic_client import AnthropicClient
-
-                return AnthropicClient(config)
-            elif model.startswith("gpt"):
-                from rawdog.llm_client.openai_client import OpenAIClient
-
-                return OpenAIClient(config)
-            else:
-                raise ValueError(f"Unsupported model: {model}")
+            model_name, client_class = get_model(model)
+            config["llm_model"] = model_name
+            return client_class(config)
 
         return super().__new__(cls)
 

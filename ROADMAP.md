@@ -9,3 +9,10 @@ Tools
 - edit: update contents of a text file
 - remember: look through preview conversation history
 - wait
+
+
+TODO:
+- Build remaining tools
+- Add ollama and OpenRouter clients
+- Standardize messages object to switch between providers in real-time
+- Add MCP support
