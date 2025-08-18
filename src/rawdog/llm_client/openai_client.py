@@ -1,7 +1,7 @@
 import os
 import json
 
-from openai import OpenAI
+from openai import OpenAI, Stream
 from dotenv import load_dotenv
 
 from rawdog.llm_client.base_client import LLMClient
@@ -10,7 +10,7 @@ from rawdog.tools import tools, Tool, ToolOutputText, ToolOutputImage
 load_dotenv()
 
 
-def build_openai_tool_schema(tool: Tool) -> dict:
+def _build_openai_tool_schema(tool: Tool) -> dict:
     return {
         "type": "function",
         "name": tool.name,
@@ -23,6 +23,45 @@ def build_openai_tool_schema(tool: Tool) -> dict:
             "required": [schema.name for schema in tool.inputs if schema.required],
         },
     }
+
+
+def _handle_stream_response(stream: Stream) -> list[dict]:
+    """Aggregate all output items, stream messages for user"""
+    output = []
+    streaming = False
+    streamed = ""
+    arguments = ""
+    for chunk in stream:
+        # For all tools, use the final chunk with complete args for output
+        if chunk.type == "response.output_item.done":
+            output.append(chunk.item)
+
+        # For message_user, stream message deltas as they come in
+        if chunk.type == "response.output_item.added":
+            streaming = chunk.item.name == "message_user"
+        elif not streaming:
+            continue
+
+        # After each chunk, try to parse json and stream new message
+        elif chunk.type == "response.function_call_arguments.delta":
+            arguments += chunk.delta
+            _arguments = arguments
+            if not _arguments.endswith('"}'):
+                _arguments += '"}'
+            try:
+                message = json.loads(_arguments).get("message", "")
+                delta = message[len(streamed) :]
+                streamed += delta
+                if delta:
+                    print(delta, end="", flush=True)
+            except Exception:
+                continue
+        elif chunk.type == "response.function_call_arguments.done":
+            streaming = False
+            print(flush=True)
+            streamed = ""
+            arguments = ""
+    return output
 
 
 class OpenAIClient(LLMClient):
@@ -38,14 +77,18 @@ class OpenAIClient(LLMClient):
         response = self.client.responses.create(
             model=self.model,
             input=self.messages,
-            tools=[build_openai_tool_schema(tool) for tool in self.tools.values()],
+            tools=[_build_openai_tool_schema(tool) for tool in self.tools.values()],
             tool_choice="required",
+            stream=True,
         )
         # TODO: update cost
 
+        # Stream the user message, aggregate tool calls
+        output = _handle_stream_response(response)
+
         # Extract the assistant message
         function_calls = []
-        for content in response.output:
+        for content in output:
             if content.type == "function_call":
                 name = content.name
                 assert name in self.tools, f"Tool {name} not found"
@@ -72,7 +115,10 @@ class OpenAIClient(LLMClient):
         # Extract the tool call data
         for tool_use in function_calls:
             tool = self.tools[tool_use["name"]]
-            content = tool.run(**json.loads(tool_use["arguments"]))
+            kwargs = json.loads(tool_use["arguments"])
+            if tool_use["name"] == "message_user":
+                kwargs["streamed"] = True
+            content = tool.run(**kwargs)
             if isinstance(content, ToolOutputText):
                 self.messages.append(
                     {
@@ -90,6 +136,7 @@ class OpenAIClient(LLMClient):
                             "call_id": tool_use["call_id"],
                             "output": "See image",
                         },
+                        # TODO: can image data be added to function_call_output?
                         {
                             "role": "user",
                             "content": [

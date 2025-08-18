@@ -13,6 +13,7 @@ class MessageUserTool(Tool):
         )
     ]
 
-    def run(self, message: str) -> ToolOutputText:
-        print(message)
+    def run(self, message: str, streamed: bool = False) -> ToolOutputText:
+        if not streamed:
+            print(message)
         return ToolOutputText(text="Sent message to user")

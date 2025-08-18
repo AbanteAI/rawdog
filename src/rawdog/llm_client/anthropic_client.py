@@ -1,6 +1,8 @@
 import os
+import json
 
 from anthropic import Anthropic
+from anthropic.lib.streaming import BetaMessageStreamManager
 from dotenv import load_dotenv
 
 from rawdog.llm_client.base_client import LLMClient
@@ -9,7 +11,7 @@ from rawdog.tools import tools, Tool, ToolOutputText, ToolOutputImage
 load_dotenv()
 
 
-def build_anthropic_tool_schema(tool: Tool) -> dict:
+def _build_anthropic_tool_schema(tool: Tool) -> dict:
     return {
         "name": tool.name,
         "description": tool.description,
@@ -27,6 +29,57 @@ def build_anthropic_tool_schema(tool: Tool) -> dict:
     }
 
 
+def _handle_stream_response(stream_manager: BetaMessageStreamManager) -> list[dict]:
+    output = []
+    streaming = False
+    streamed = ""
+    content_block = {}
+    with stream_manager as stream:
+        for chunk in stream:
+            if chunk.type == "content_block_stop":
+                try:
+                    content_block["input"] = json.loads(content_block["input"])
+                except Exception:
+                    content_block["input"] = {}
+                output.append(content_block)
+                content_block = {}
+                streaming = False
+                streamed = ""
+
+            elif chunk.type == "content_block_start":
+                if chunk.content_block.type == "tool_use":
+                    content_block = {
+                        "type": chunk.content_block.type,
+                        "id": chunk.content_block.id,
+                        "name": chunk.content_block.name,
+                        "input": "",
+                    }
+                    if chunk.content_block.name == "message_user":
+                        streaming = True
+
+                else:
+                    print(chunk)
+
+                # TODO: Tell the model to only return tool_use
+
+            elif chunk.type == "content_block_delta":
+                content_block["input"] += chunk.delta.partial_json
+                if streaming:
+                    partial_json = content_block["input"]
+                    if not partial_json.endswith('"}'):
+                        partial_json += '"}'
+                    try:
+                        message = json.loads(partial_json).get("message", "")
+                        delta = message[len(streamed) :]
+                        streamed += delta
+                        if delta:
+                            print(delta, end="", flush=True)
+                    except Exception:
+                        continue
+
+    return output
+
+
 class AnthropicClient(LLMClient):
     def _initialize_client(self, system_prompt: str):
         api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -38,41 +91,30 @@ class AnthropicClient(LLMClient):
 
     def _step(self):
         # Generate completion
-        response = self.client.messages.create(
+        response = self.client.beta.messages.stream(
             model=self.model,
             max_tokens=1024,
             temperature=self.temperature,
-            tools=[build_anthropic_tool_schema(tool) for tool in self.tools.values()],
+            tools=[_build_anthropic_tool_schema(tool) for tool in self.tools.values()],
             system=self.system,
             messages=self.messages,
             tool_choice={"type": "any"},  # Only allow tool calls
+            betas=["fine-grained-tool-streaming-2025-05-14"],
         )
         # TODO: update cost
 
-        # Extract the assistant message
-        assistant_message = []
-        for content in response.content:
-            if content.type == "tool_use":
-                name = content.name
-                assert name in self.tools, f"Tool {name} not found"
-                id = content.id
-                input = content.input
-                assistant_message.append(
-                    {
-                        "type": "tool_use",
-                        "id": id,
-                        "name": name,
-                        "input": input,
-                    }
-                )
-        assert assistant_message, "No tool_use in response"
-        self.messages.append({"role": "assistant", "content": assistant_message})
+        output = _handle_stream_response(response)
+        assert output, "No tool_use in response"
+        self.messages.append({"role": "assistant", "content": output})
 
         # Extract the tool call data
         user_message = []
-        for tool_use in assistant_message:
+        for tool_use in output:
             tool = self.tools[tool_use["name"]]
-            content = tool.run(**tool_use["input"])
+            kwargs = {**tool_use["input"]}
+            if tool_use["name"] == "message_user":
+                kwargs["streamed"] = True
+            content = tool.run(**kwargs)
             if isinstance(content, ToolOutputText):
                 user_message.append(
                     {
