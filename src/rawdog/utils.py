@@ -39,13 +39,7 @@ class EnvInfo:
             ""
             if not _is_git
             else "\nThe last commit message is: "
-            + (
-                subprocess.run(
-                    ["git", "log", "-1", "--pretty=%B"], stdout=subprocess.PIPE
-                )
-                .stdout.decode()
-                .strip()
-            )
+            + (subprocess.run(["git", "log", "-1", "--pretty=%B"], stdout=subprocess.PIPE).stdout.decode().strip())
         )
         _retries = 0 if self.config is None else self.config.get("retries")
         self.retries = f"\nYou'll get {_retries} retries."
